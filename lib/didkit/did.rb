@@ -47,6 +47,8 @@ module DIDKit
       end
 
       nil
+    rescue StandardError => e
+      nil
     end
 
     attr_reader :type
