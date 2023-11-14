@@ -2,7 +2,5 @@
 
 require_relative "didkit/version"
 
-module Didkit
-  class Error < StandardError; end
-  # Your code goes here...
+module DIDKit
 end

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-module Didkit
-  VERSION = "0.1.0"
+module DIDKit
+  VERSION = "0.0.1"
 end
