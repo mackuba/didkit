@@ -1,4 +1,5 @@
 require 'json'
+require 'net/http'
 require 'open-uri'
 require 'resolv'
 
