@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "didkit"
+
+begin
+  query = ARGV[0].to_s
+
+  if query =~ /^did\:/
+    did = DID.new(query)
+  elsif query =~ /^@[\w\-]+(\.[\w\-]+)+$/
+    did = DID.resolve_handle(query)
+  else
+    puts "Usage: #{$PROGRAM_NAME} <@handle> | <did:...>"
+    exit 1
+  end
+
+  doc = did.get_document
+
+  puts
+  puts "PDS: #{doc.pds_endpoint}"
+  puts
+  puts JSON.pretty_generate(doc.json)
+rescue StandardError => e
+  puts "Error: #{e}"
+end
