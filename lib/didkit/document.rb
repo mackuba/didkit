@@ -1,14 +1,39 @@
 module DIDKit
   class Document
-    attr_reader :json
+    class FormatError < StandardError
+    end
+
+    attr_reader :json, :pds_endpoint, :handles
 
     def initialize(json)
       @json = json
-    end
 
-    def pds_endpoint
-      service = (@json['service'] || []).detect { |s| s['id'] == '#atproto_pds' }
-      service && service['serviceEndpoint']
+      raise FormatError, "Missing id field" if json['id'].nil?
+      raise FormatError, "Invalid id field" unless json['id'].is_a?(String)
+
+      service = json['service']
+      raise FormatError, "Missing service key" if service.nil?
+      raise FormatError, "Invalid service data" unless service.is_a?(Array) && service.all? { |x| x.is_a?(Hash) }
+
+      if pds = service.detect { |x| x['id'] == '#atproto_pds' }
+        raise FormatError, "Missing PDS type" unless pds['type']
+        raise FormatError, "Invalid PDS type" unless pds['type'] == 'AtprotoPersonalDataServer'
+        raise FormatError, "Missing PDS endpoint" unless pds['serviceEndpoint']
+        raise FormatError, "Invalid PDS endpoint" unless pds['serviceEndpoint'].is_a?(String)
+        raise FormatError, "Invalid PDS endpoint" unless pds['serviceEndpoint'] =~ %r(://)
+
+        @pds_endpoint = pds['serviceEndpoint']
+      end
+
+      if aka = json['alsoKnownAs']
+        raise FormatError, "Invalid alsoKnownAs" unless aka.is_a?(Array)
+        raise FormatError, "Invalid alsoKnownAs" unless aka.all? { |x| x.is_a?(String) }
+        raise FormatError, "Invalid alsoKnownAs" unless aka.all? { |x| x =~ %r(\Aat://[^/]+\z) }
+
+        @handles = aka.map { |x| x.gsub('at://', '') }
+      else
+        @handles = []
+      end
     end
   end
 end
