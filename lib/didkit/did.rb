@@ -74,6 +74,10 @@ module DIDKit
       type == :plc ? resolve_did_plc : resolve_did_web
     end
 
+    def web_domain
+      did.gsub(/^did\:web\:/, '') if type == :web
+    end
+
     def resolve_did_plc
       url = "https://plc.directory/#{did}"
       json = JSON.parse(URI.open(url).read)
@@ -81,8 +85,7 @@ module DIDKit
     end
 
     def resolve_did_web
-      host = did.gsub(/^did\:web\:/, '')
-      url = "https://#{host}/.well-known/did.json"
+      url = "https://#{web_domain}/.well-known/did.json"
       json = JSON.parse(URI.open(url).read)
       Document.new(self, json)
     end
