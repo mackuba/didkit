@@ -12,9 +12,9 @@ module DIDKit
       domain = handle.gsub(/^@/, '')
 
       if dns_did = resolve_handle_by_dns(domain)
-        DID.new(dns_did)
+        DID.new(dns_did, :dns)
       elsif http_did = resolve_handle_by_well_known(domain)
-        DID.new(http_did)
+        DID.new(http_did, :http)
       else
         nil
       end
@@ -51,9 +51,9 @@ module DIDKit
       nil
     end
 
-    attr_reader :type
+    attr_reader :type, :resolved_by
 
-    def initialize(did)
+    def initialize(did, resolved_by = nil)
       if did =~ /^did\:(\w+)\:/
         @did = did
         @type = $1.to_sym
@@ -64,6 +64,8 @@ module DIDKit
       if @type != :plc && @type != :web
         raise DIDError.new("Unrecognized DID type: #{@type}")
       end
+
+      @resolved_by = resolved_by
     end
 
     def to_s
