@@ -51,7 +51,7 @@ module DIDKit
       nil
     end
 
-    attr_reader :type, :resolved_by
+    attr_reader :type, :did, :resolved_by
 
     def initialize(did, resolved_by = nil)
       if did =~ /^did\:(\w+)\:/
@@ -68,9 +68,7 @@ module DIDKit
       @resolved_by = resolved_by
     end
 
-    def to_s
-      @did
-    end
+    alias to_s did
 
     def get_document
       type == :plc ? resolve_did_plc : resolve_did_web
