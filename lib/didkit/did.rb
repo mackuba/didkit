@@ -56,12 +56,12 @@ module DIDKit
     def initialize(did)
       if did =~ /^did\:(\w+)\:/
         @did = did
-        @type = $1
+        @type = $1.to_sym
       else
         raise DIDError.new("Invalid DID format")
       end
 
-      if @type != 'plc' && @type != 'web'
+      if @type != :plc && @type != :web
         raise DIDError.new("Unrecognized DID type: #{@type}")
       end
     end
@@ -71,20 +71,16 @@ module DIDKit
     end
 
     def get_document
-      if @type == 'plc'
-        resolve_did_plc(@did)
-      elsif @type == 'web'
-        resolve_did_web(@did)
-      end
+      type == :plc ? resolve_did_plc : resolve_did_web
     end
 
-    def resolve_did_plc(did)
+    def resolve_did_plc
       url = "https://plc.directory/#{did}"
       json = JSON.parse(URI.open(url).read)
       Document.new(json)
     end
 
-    def resolve_did_web(did)
+    def resolve_did_web
       host = did.gsub(/^did\:web\:/, '')
       url = "https://#{host}/.well-known/did.json"
       json = JSON.parse(URI.open(url).read)
