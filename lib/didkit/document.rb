@@ -3,13 +3,15 @@ module DIDKit
     class FormatError < StandardError
     end
 
-    attr_reader :json, :pds_endpoint, :handles
+    attr_reader :json, :did, :pds_endpoint, :handles
 
-    def initialize(json)
-      @json = json
-
+    def initialize(did, json)
       raise FormatError, "Missing id field" if json['id'].nil?
       raise FormatError, "Invalid id field" unless json['id'].is_a?(String)
+      raise FormatError, "Id field doesn't match expected DID" unless json['id'] == did.to_s
+
+      @did = did
+      @json = json
 
       service = json['service']
       raise FormatError, "Missing service key" if service.nil?

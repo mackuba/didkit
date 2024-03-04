@@ -77,14 +77,14 @@ module DIDKit
     def resolve_did_plc
       url = "https://plc.directory/#{did}"
       json = JSON.parse(URI.open(url).read)
-      Document.new(json)
+      Document.new(self, json)
     end
 
     def resolve_did_web
       host = did.gsub(/^did\:web\:/, '')
       url = "https://#{host}/.well-known/did.json"
       json = JSON.parse(URI.open(url).read)
-      Document.new(json)
+      Document.new(self, json)
     end
   end
 end
