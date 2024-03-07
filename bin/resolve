@@ -24,10 +24,12 @@ begin
   end
 
   doc = did.get_document
+  valid_handle = doc.get_validated_handle
 
   puts
   puts "PDS: #{doc.pds_endpoint}"
-  puts "Resolved by: #{did.resolved_by}"
+  puts "Resolved by: #{did.resolved_by}" if did.resolved_by
+  puts "Validated handle: " + (valid_handle ? "@#{valid_handle}" : "⚠️ invalid handle #{doc.handles.inspect}")
   puts
   puts JSON.pretty_generate(doc.json)
 rescue StandardError => e
