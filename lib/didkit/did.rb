@@ -1,54 +1,10 @@
-require 'json'
-require 'net/http'
-require 'open-uri'
-require 'resolv'
-
-require_relative 'document'
 require_relative 'errors'
+require_relative 'resolver'
 
 module DIDKit
   class DID
     def self.resolve_handle(handle)
-      domain = handle.gsub(/^@/, '')
-
-      if dns_did = resolve_handle_by_dns(domain)
-        DID.new(dns_did, :dns)
-      elsif http_did = resolve_handle_by_well_known(domain)
-        DID.new(http_did, :http)
-      else
-        nil
-      end
-    end
-
-    def self.resolve_handle_by_dns(domain)
-      dns_records = Resolv::DNS.open { |d| d.getresources("_atproto.#{domain}", Resolv::DNS::Resource::IN::TXT) }
-
-      if record = dns_records.first
-        if string = record.strings.first
-          if string =~ /^did\=(did\:\w+\:.*)$/
-            return $1
-          end
-        end
-      end
-
-      nil
-    end
-
-    def self.resolve_handle_by_well_known(domain)
-      url = URI("https://#{domain}/.well-known/atproto-did")
-      response = Net::HTTP.get_response(url)
-
-      if response.is_a?(Net::HTTPSuccess)
-        if text = response.body
-          if text.lines.length == 1 && text.start_with?('did:')
-            return text
-          end
-        end
-      end
-
-      nil
-    rescue StandardError => e
-      nil
+      Resolver.new.resolve_handle(handle)
     end
 
     attr_reader :type, :did, :resolved_by
@@ -71,23 +27,11 @@ module DIDKit
     alias to_s did
 
     def get_document
-      type == :plc ? resolve_did_plc : resolve_did_web
+      Resolver.new.resolve_did(self)
     end
 
     def web_domain
       did.gsub(/^did\:web\:/, '') if type == :web
-    end
-
-    def resolve_did_plc
-      url = "https://plc.directory/#{did}"
-      json = JSON.parse(URI.open(url).read)
-      Document.new(self, json)
-    end
-
-    def resolve_did_web
-      url = "https://#{web_domain}/.well-known/did.json"
-      json = JSON.parse(URI.open(url).read)
-      Document.new(self, json)
     end
   end
 end

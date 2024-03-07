@@ -8,7 +8,7 @@ module DIDKit
     def initialize(did, json)
       raise FormatError, "Missing id field" if json['id'].nil?
       raise FormatError, "Invalid id field" unless json['id'].is_a?(String)
-      raise FormatError, "Id field doesn't match expected DID" unless json['id'] == did.to_s
+      raise FormatError, "id field doesn't match expected DID" unless json['id'] == did.to_s
 
       @did = did
       @json = json
