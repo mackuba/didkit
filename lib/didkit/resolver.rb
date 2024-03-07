@@ -36,7 +36,11 @@ module DIDKit
 
     def resolve_handle_by_well_known(domain)
       url = URI("https://#{domain}/.well-known/atproto-did")
-      response = Net::HTTP.get_response(url)
+
+      response = Net::HTTP.start(url.host, url.port, use_ssl: true, open_timeout: 10, read_timeout: 10) do |http|
+        request = Net::HTTP::Get.new(url)
+        http.request(request)
+      end
 
       if response.is_a?(Net::HTTPSuccess)
         if text = response.body
