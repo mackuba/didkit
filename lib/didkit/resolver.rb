@@ -72,5 +72,11 @@ module DIDKit
       json = JSON.parse(URI.open(url).read)
       Document.new(did, json)
     end
+
+    def get_validated_handle(did_or_doc)
+      document = did_or_doc.is_a?(Document) ? did_or_doc : resolve_did(did_or_doc)
+
+      document.handles.detect { |h| resolve_handle(h) == document.did }
+    end
   end
 end

@@ -33,5 +33,15 @@ module DIDKit
     def web_domain
       did.gsub(/^did\:web\:/, '') if type == :web
     end
+
+    def ==(other)
+      if other.is_a?(String)
+        self.did == other
+      elsif other.is_a?(DID)
+        self.did == other.did
+      else
+        false
+      end
+    end
   end
 end
