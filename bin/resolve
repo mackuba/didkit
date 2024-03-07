@@ -27,6 +27,7 @@ begin
 
   puts
   puts "PDS: #{doc.pds_endpoint}"
+  puts "Resolved by: #{did.resolved_by}"
   puts
   puts JSON.pretty_generate(doc.json)
 rescue StandardError => e
