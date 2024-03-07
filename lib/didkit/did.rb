@@ -30,6 +30,10 @@ module DIDKit
       Resolver.new.resolve_did(self)
     end
 
+    def get_validated_handle
+      Resolver.new.get_validated_handle(self)
+    end
+
     def web_domain
       did.gsub(/^did\:web\:/, '') if type == :web
     end

@@ -37,5 +37,9 @@ module DIDKit
         @handles = []
       end
     end
+
+    def get_validated_handle
+      Resolver.new.get_validated_handle(self)
+    end
   end
 end
