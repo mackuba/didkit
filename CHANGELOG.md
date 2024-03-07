@@ -1,3 +1,9 @@
+## [0.0.4] - 2024-03-07
+
+- extracted resolving code from `DID` to a new `Resolver` class (`DID` has helper methods to call the resolver)
+- added `Resolver#get_validated_handle` method to validate handles from the `Document` (+ helpers in `DID` in `Document`)
+- added timeout to `#resolve_handle_by_well_known`
+
 ## [0.0.3] - 2024-03-06
 
 - added `Document#handles` with handle info extracted from `alsoKnownAs` field
