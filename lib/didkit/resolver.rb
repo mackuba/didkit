@@ -8,8 +8,12 @@ require_relative 'document'
 
 module DIDKit
   class Resolver
+    RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
+
     def resolve_handle(handle)
       domain = handle.gsub(/^@/, '')
+
+      return nil if RESERVED_DOMAINS.include?(domain.split('.').last)
 
       if dns_did = resolve_handle_by_dns(domain)
         DID.new(dns_did, :dns)
