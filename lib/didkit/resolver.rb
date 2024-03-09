@@ -29,9 +29,7 @@ module DIDKit
 
       if record = dns_records.first
         if string = record.strings.first
-          if string =~ /^did\=(did\:\w+\:.*)$/
-            return $1
-          end
+          return parse_did_from_dns(string)
         end
       end
 
@@ -48,15 +46,22 @@ module DIDKit
 
       if response.is_a?(Net::HTTPSuccess)
         if text = response.body
-          if text.lines.length == 1 && text.start_with?('did:')
-            return text
-          end
+          return parse_did_from_well_known(text)
         end
       end
 
       nil
     rescue StandardError => e
       nil
+    end
+
+    def parse_did_from_dns(txt)
+      txt =~ /\Adid\=(did\:\w+\:.*)\z/ ? $1 : nil
+    end
+
+    def parse_did_from_well_known(text)
+      text = text.strip
+      text.lines.length == 1 && text.start_with?('did:') ? text : nil
     end
 
     def resolve_did(did)
