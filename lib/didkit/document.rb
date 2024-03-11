@@ -39,7 +39,7 @@ module DIDKit
     end
 
     def get_validated_handle
-      Resolver.new.get_validated_handle(self)
+      Resolver.new.pick_valid_handle(did, handles)
     end
   end
 end
