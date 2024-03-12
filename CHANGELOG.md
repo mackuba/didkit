@@ -1,3 +1,12 @@
+## [0.1.0] - 2024-03-12
+
+- rejecting handles from disallowed domains like `.arpa` or `.test`
+- validating handles with the `.well-known` file having a trailing newline
+- validating handles with `.well-known` address returning a redirect
+- added `#pick_valid_handle` helper
+- allow overriding the nameserver for `Resolv::DNS`
+- other bug fixes
+
 ## [0.0.4] - 2024-03-07
 
 - extracted resolving code from `DID` to a new `Resolver` class (`DID` has helper methods to call the resolver)
