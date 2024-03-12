@@ -9,6 +9,7 @@ require_relative 'document'
 module DIDKit
   class Resolver
     RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
+    MAX_REDIRECTS = 5
 
     attr_accessor :nameserver
 
@@ -41,7 +42,11 @@ module DIDKit
     end
 
     def resolve_handle_by_well_known(domain)
-      url = URI("https://#{domain}/.well-known/atproto-did")
+      resolve_handle_from_url("https://#{domain}/.well-known/atproto-did")
+    end
+
+    def resolve_handle_from_url(url, redirects = 0)
+      url = URI(url) unless url.is_a?(URI)
 
       response = Net::HTTP.start(url.host, url.port, use_ssl: true, open_timeout: 10, read_timeout: 10) do |http|
         request = Net::HTTP::Get.new(url)
@@ -51,6 +56,11 @@ module DIDKit
       if response.is_a?(Net::HTTPSuccess)
         if text = response.body
           return parse_did_from_well_known(text)
+        end
+      elsif response.is_a?(Net::HTTPRedirection) && redirects < MAX_REDIRECTS
+        if location = response['Location']
+          target_url = location.include?('://') ? location : (url.origin + location)
+          return resolve_handle_from_url(target_url, redirects + 1)
         end
       end
 
