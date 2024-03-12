@@ -10,6 +10,8 @@ module DIDKit
   class Resolver
     RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
 
+    attr_accessor :nameserver
+
     def resolve_handle(handle)
       domain = handle.gsub(/^@/, '')
 
@@ -25,7 +27,9 @@ module DIDKit
     end
 
     def resolve_handle_by_dns(domain)
-      dns_records = Resolv::DNS.open { |d| d.getresources("_atproto.#{domain}", Resolv::DNS::Resource::IN::TXT) }
+      dns_records = Resolv::DNS.open(resolv_options) { |d|
+        d.getresources("_atproto.#{domain}", Resolv::DNS::Resource::IN::TXT)
+      }
 
       if record = dns_records.first
         if string = record.strings.first
@@ -53,6 +57,12 @@ module DIDKit
       nil
     rescue StandardError => e
       nil
+    end
+
+    def resolv_options
+      options = Resolv::DNS::Config.default_config_hash.dup
+      options[:nameserver] = nameserver if nameserver
+      options
     end
 
     def parse_did_from_dns(txt)
