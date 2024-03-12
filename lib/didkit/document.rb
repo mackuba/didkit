@@ -1,3 +1,5 @@
+require_relative 'resolver'
+
 module DIDKit
   class Document
     class FormatError < StandardError
