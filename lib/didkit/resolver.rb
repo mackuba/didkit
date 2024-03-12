@@ -81,7 +81,7 @@ module DIDKit
 
     def parse_did_from_well_known(text)
       text = text.strip
-      text.lines.length == 1 && text.start_with?('did:') ? text : nil
+      text.lines.length == 1 && text =~ /\Adid\:\w+\:.*\z/ ? text : nil
     end
 
     def resolve_did(did)
