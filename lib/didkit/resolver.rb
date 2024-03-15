@@ -13,6 +13,10 @@ module DIDKit
 
     attr_accessor :nameserver
 
+    def initialize(options = {})
+      @nameserver = options[:nameserver]
+    end
+
     def resolve_handle(handle)
       domain = handle.gsub(/^@/, '')
 
