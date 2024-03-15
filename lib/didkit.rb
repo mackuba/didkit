@@ -2,6 +2,7 @@
 
 require_relative "didkit/did"
 require_relative "didkit/document"
+require_relative "didkit/resolver"
 require_relative "didkit/version"
 
 module DIDKit
