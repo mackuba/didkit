@@ -1,7 +1,7 @@
 module DIDKit
   module Services
     def get_service(key, type)
-      @services.detect { |s| s.key == key && s.type == type }
+      @services&.detect { |s| s.key == key && s.type == type }
     end
 
     def pds_endpoint
