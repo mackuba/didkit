@@ -1,11 +1,15 @@
 require_relative 'resolver'
+require_relative 'service_record'
+require_relative 'services'
 
 module DIDKit
   class Document
     class FormatError < StandardError
     end
 
-    attr_reader :json, :did, :pds_endpoint, :handles
+    include Services
+
+    attr_reader :json, :did, :handles, :services
 
     def initialize(did, json)
       raise FormatError, "Missing id field" if json['id'].nil?
@@ -19,15 +23,18 @@ module DIDKit
       raise FormatError, "Missing service key" if service.nil?
       raise FormatError, "Invalid service data" unless service.is_a?(Array) && service.all? { |x| x.is_a?(Hash) }
 
-      if pds = service.detect { |x| x['id'] == '#atproto_pds' }
-        raise FormatError, "Missing PDS type" unless pds['type']
-        raise FormatError, "Invalid PDS type" unless pds['type'] == 'AtprotoPersonalDataServer'
-        raise FormatError, "Missing PDS endpoint" unless pds['serviceEndpoint']
-        raise FormatError, "Invalid PDS endpoint" unless pds['serviceEndpoint'].is_a?(String)
-        raise FormatError, "Invalid PDS endpoint" unless pds['serviceEndpoint'] =~ %r(://)
+      @services = service.map { |x|
+        id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
 
-        @pds_endpoint = pds['serviceEndpoint']
-      end
+        raise FormatError, "Missing service id" unless id
+        raise FormatError, "Invalid service id: #{id.inspect}" unless id.is_a?(String) && id.start_with?('#')
+        raise FormatError, "Missing service type" unless type
+        raise FormatError, "Invalid service type: #{type.inspect}" unless type.is_a?(String)
+        raise FormatError, "Missing service endpoint" unless endpoint
+        raise FormatError, "Invalid service endpoint: #{endpoint.inspect}" unless endpoint.is_a?(String)
+
+        ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+      }
 
       if aka = json['alsoKnownAs']
         raise FormatError, "Invalid alsoKnownAs" unless aka.is_a?(Array)

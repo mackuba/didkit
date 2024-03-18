@@ -1,11 +1,16 @@
 require 'time'
 
+require_relative 'service_record'
+require_relative 'services'
+
 module DIDKit
   class PLCOperation
     class FormatError < StandardError
     end
 
-    attr_reader :json, :did, :created_at, :type, :pds_endpoint, :handles
+    include Services
+
+    attr_reader :json, :did, :created_at, :type, :handles, :services
 
     def initialize(json)
       @json = json
@@ -33,17 +38,16 @@ module DIDKit
       raise FormatError, "Missing services key: #{json}" if services.nil?
       raise FormatError, "Invalid services data: #{services}" unless services.is_a?(Hash)
 
-      if pds = services['atproto_pds']
-        raise FormatError, "Invalid PDS data: #{pds.inspect}" unless pds.is_a?(Hash)
-        raise FormatError, "Missing PDS type: #{pds.inspect}" unless pds['type']
-        raise FormatError, "Invalid PDS type: #{pds['type']}" unless pds['type'] == 'AtprotoPersonalDataServer'
+      @services = services.map { |k, x|
+        type, endpoint = x.values_at('type', 'endpoint')
 
-        endpoint = pds['endpoint']
-        raise FormatError, "Missing PDS endpoint: #{pds.inspect}" unless endpoint
-        raise FormatError, "Invalid PDS endpoint: #{endpoint}" unless endpoint.is_a?(String) && endpoint =~ %r(://)
+        raise FormatError, "Missing service type" unless type
+        raise FormatError, "Invalid service type: #{type.inspect}" unless type.is_a?(String)
+        raise FormatError, "Missing service endpoint" unless endpoint
+        raise FormatError, "Invalid service endpoint: #{endpoint.inspect}" unless endpoint.is_a?(String)
 
-        @pds_endpoint = endpoint
-      end
+        ServiceRecord.new(k, type, endpoint)
+      }
 
       if aka = operation['alsoKnownAs']
         raise FormatError, "Invalid alsoKnownAs: #{aka.inspect}" unless aka.is_a?(Array)
