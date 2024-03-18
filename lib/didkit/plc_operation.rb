@@ -1,5 +1,6 @@
 require 'time'
 
+require_relative 'at_handles'
 require_relative 'service_record'
 require_relative 'services'
 
@@ -8,6 +9,7 @@ module DIDKit
     class FormatError < StandardError
     end
 
+    include AtHandles
     include Services
 
     attr_reader :json, :did, :created_at, :type, :handles, :services
@@ -49,15 +51,7 @@ module DIDKit
         ServiceRecord.new(k, type, endpoint)
       }
 
-      if aka = operation['alsoKnownAs']
-        raise FormatError, "Invalid alsoKnownAs: #{aka.inspect}" unless aka.is_a?(Array)
-        raise FormatError, "Invalid alsoKnownAs: #{aka.inspect}" unless aka.all? { |x| x.is_a?(String) }
-        raise FormatError, "Invalid alsoKnownAs: #{aka.inspect}" unless aka.all? { |x| x =~ %r(\Aat://[^/]+\z) }
-
-        @handles = aka.map { |x| x.gsub('at://', '') }
-      else
-        @handles = []
-      end
+      @handles = parse_also_known_as(operation['alsoKnownAs'] || [])
     end
   end
 end

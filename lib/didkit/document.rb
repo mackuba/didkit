@@ -1,3 +1,4 @@
+require_relative 'at_handles'
 require_relative 'resolver'
 require_relative 'service_record'
 require_relative 'services'
@@ -7,6 +8,7 @@ module DIDKit
     class FormatError < StandardError
     end
 
+    include AtHandles
     include Services
 
     attr_reader :json, :did, :handles, :services
@@ -36,15 +38,7 @@ module DIDKit
         ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
       }
 
-      if aka = json['alsoKnownAs']
-        raise FormatError, "Invalid alsoKnownAs" unless aka.is_a?(Array)
-        raise FormatError, "Invalid alsoKnownAs" unless aka.all? { |x| x.is_a?(String) }
-        raise FormatError, "Invalid alsoKnownAs" unless aka.all? { |x| x =~ %r(\Aat://[^/]+\z) }
-
-        @handles = aka.map { |x| x.gsub('at://', '') }
-      else
-        @handles = []
-      end
+      @handles = parse_also_known_as(json['alsoKnownAs'] || [])
     end
 
     def get_validated_handle
