@@ -1,3 +1,9 @@
+## [0.2.0] - 2024-03-19
+
+- added `PLCImporter` class, which lets you import operations from PLC in pages of 1000 through the "export" API
+- implemented parsing of all services from DID doc & operations, not only `atproto_pds` (specifically labeller endpoints)
+- allow setting the nameserver in `Resolver` initializer
+
 ## [0.1.0] - 2024-03-12
 
 - rejecting handles from disallowed domains like `.arpa` or `.test`
