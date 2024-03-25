@@ -51,7 +51,7 @@ module DIDKit
         ServiceRecord.new(k, type, endpoint)
       }
 
-      @handles = parse_also_known_as(operation['alsoKnownAs'] || [])
+      @handles = parse_also_known_as(operation['alsoKnownAs'])
     end
   end
 end

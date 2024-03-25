@@ -21,22 +21,18 @@ module DIDKit
       @did = did
       @json = json
 
-      service = json['service']
-      raise FormatError, "Missing service key" if service.nil?
-      raise FormatError, "Invalid service data" unless service.is_a?(Array) && service.all? { |x| x.is_a?(Hash) }
+      if service = json['service']
+        raise FormatError, "Invalid service data" unless service.is_a?(Array) && service.all? { |x| x.is_a?(Hash) }
 
-      @services = service.map { |x|
-        id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
+        @services = service.filter_map { |x|
+          id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
+          next unless id.is_a?(String) && id.start_with?('#') && type.is_a?(String) && endpoint.is_a?(String)
 
-        raise FormatError, "Missing service id" unless id
-        raise FormatError, "Invalid service id: #{id.inspect}" unless id.is_a?(String) && id.start_with?('#')
-        raise FormatError, "Missing service type" unless type
-        raise FormatError, "Invalid service type: #{type.inspect}" unless type.is_a?(String)
-        raise FormatError, "Missing service endpoint" unless endpoint
-        raise FormatError, "Invalid service endpoint: #{endpoint.inspect}" unless endpoint.is_a?(String)
-
-        ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
-      }
+          ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+        }
+      else
+        @services = []
+      end
 
       @handles = parse_also_known_as(json['alsoKnownAs'] || [])
     end
