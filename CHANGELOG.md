@@ -1,3 +1,8 @@
+## [0.2.1] - 2024-03-26
+
+- tweaked validations in `Document` and `PLCOperation` to make them more aligned with what might be expected
+- added Ruby stdlib dependencies explicitly to the gemspec
+
 ## [0.2.0] - 2024-03-19
 
 - added `PLCImporter` class, which lets you import operations from PLC in pages of 1000 through the "export" API
