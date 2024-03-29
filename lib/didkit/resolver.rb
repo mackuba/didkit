@@ -5,11 +5,14 @@ require 'resolv'
 
 require_relative 'did'
 require_relative 'document'
+require_relative 'requests'
 
 module DIDKit
   class Resolver
     RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
     MAX_REDIRECTS = 5
+
+    include Requests
 
     attr_accessor :nameserver
 
@@ -32,9 +35,9 @@ module DIDKit
     end
 
     def resolve_handle_by_dns(domain)
-      dns_records = Resolv::DNS.open(resolv_options) { |d|
+      dns_records = Resolv::DNS.open(resolv_options) do |d|
         d.getresources("_atproto.#{domain}", Resolv::DNS::Resource::IN::TXT)
-      }
+      end
 
       if record = dns_records.first
         if string = record.strings.first
@@ -46,26 +49,11 @@ module DIDKit
     end
 
     def resolve_handle_by_well_known(domain)
-      resolve_handle_from_url("https://#{domain}/.well-known/atproto-did")
-    end
+      url = "https://#{domain}/.well-known/atproto-did"
+      response = get_response(url, timeout: 10, max_redirects: MAX_REDIRECTS)
 
-    def resolve_handle_from_url(url, redirects = 0)
-      url = URI(url) unless url.is_a?(URI)
-
-      response = Net::HTTP.start(url.host, url.port, use_ssl: true, open_timeout: 10, read_timeout: 10) do |http|
-        request = Net::HTTP::Get.new(url)
-        http.request(request)
-      end
-
-      if response.is_a?(Net::HTTPSuccess)
-        if text = response.body
-          return parse_did_from_well_known(text)
-        end
-      elsif response.is_a?(Net::HTTPRedirection) && redirects < MAX_REDIRECTS
-        if location = response['Location']
-          target_url = location.include?('://') ? location : (url.origin + location)
-          return resolve_handle_from_url(target_url, redirects + 1)
-        end
+      if response.is_a?(Net::HTTPSuccess) && (text = response.body)
+        return parse_did_from_well_known(text)
       end
 
       nil
