@@ -1,3 +1,7 @@
+## [0.2.2] - 2024-04-01
+
+- added helpers for checking if a DID is known by (federated with) a relay or if the repo exists on its assigned PDS
+
 ## [0.2.1] - 2024-03-26
 
 - tweaked validations in `Document` and `PLCOperation` to make them more aligned with what might be expected
