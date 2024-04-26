@@ -26,11 +26,4 @@ Gem::Specification.new do |spec|
   end
 
   spec.require_paths = ["lib"]
-
-  spec.add_dependency 'json', '~> 2.5'
-  spec.add_dependency 'net-http', '~> 0.1'
-  spec.add_dependency 'open-uri', '~> 0.1'
-  spec.add_dependency 'resolv', '~> 0.1'
-  spec.add_dependency 'time', '~> 0.3'
-  spec.add_dependency 'uri', '~> 0.13'
 end
