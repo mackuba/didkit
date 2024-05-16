@@ -32,7 +32,7 @@ module DIDKit
       @ignore_errors = val
 
       if val
-        @error_handler = proc { |e| "(ignore error)" }
+        @error_handler = proc { |e, j| "(ignore error)" }
       else
         @error_handler = nil
       end
@@ -56,7 +56,7 @@ module DIDKit
         begin
           PLCOperation.new(json)
         rescue PLCOperation::FormatError, AtHandles::FormatError, ServiceRecord::FormatError => e
-          @error_handler ? @error_handler.call(e) : raise
+          @error_handler ? @error_handler.call(e, json) : raise
         end
       end
 
