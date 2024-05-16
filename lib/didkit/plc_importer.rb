@@ -47,7 +47,7 @@ module DIDKit
       operations = rows.filter_map do |json|
         begin
           PLCOperation.new(json)
-        rescue PLCOperation::FormatError => e
+        rescue PLCOperation::FormatError, AtHandles::FormatError, ServiceRecord::FormatError => e
           ignore_errors ? nil : raise
         end
       end
