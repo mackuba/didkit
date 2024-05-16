@@ -9,7 +9,7 @@ module DIDKit
     PLC_SERVICE = 'plc.directory'
     MAX_PAGE = 1000
 
-    attr_accessor :ignore_errors, :last_date
+    attr_accessor :ignore_errors, :last_date, :error_handler
 
     def initialize(since: nil)
       if since.to_s == 'beginning'
@@ -22,12 +22,20 @@ module DIDKit
         @last_date = Time.now
         @eof = true
       end
-
-      @ignore_errors = false
     end
 
     def plc_service
       PLC_SERVICE
+    end
+
+    def ignore_errors=(val)
+      @ignore_errors = val
+
+      if val
+        @error_handler = proc { |e| "(ignore error)" }
+      else
+        @error_handler = nil
+      end
     end
 
     def get_export(args = {})
@@ -48,7 +56,7 @@ module DIDKit
         begin
           PLCOperation.new(json)
         rescue PLCOperation::FormatError, AtHandles::FormatError, ServiceRecord::FormatError => e
-          ignore_errors ? nil : raise
+          @error_handler ? @error_handler.call(e) : raise
         end
       end
 
