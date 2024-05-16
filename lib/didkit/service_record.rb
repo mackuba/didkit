@@ -3,6 +3,9 @@ require_relative 'errors'
 
 module DIDKit
   class ServiceRecord
+    class FormatError < StandardError
+    end
+
     attr_reader :key, :type, :endpoint
 
     def initialize(key, type, endpoint)
