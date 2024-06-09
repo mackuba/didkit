@@ -57,6 +57,7 @@ module DIDKit
           PLCOperation.new(json)
         rescue PLCOperation::FormatError, AtHandles::FormatError, ServiceRecord::FormatError => e
           @error_handler ? @error_handler.call(e, json) : raise
+          nil
         end
       end
 
