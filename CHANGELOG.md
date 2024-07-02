@@ -1,3 +1,10 @@
+## [0.2.3] - 2024-07-02
+
+- added a `DID#get_audit_log` method that fetches the PLC audit log for a DID
+- added a way to set an error handler in `PLCImporter`
+- reverted the change from 0.2.1 that added Ruby stdlib dependencies explicitly to the gemspec, since this causes more problems than it's worth
+- minor bug fixes
+
 ## [0.2.2] - 2024-04-01
 
 - added helpers for checking if a DID is known by (federated with) a relay or if the repo exists on its assigned PDS
