@@ -69,6 +69,35 @@ module DIDKit
       end
     end
 
+    def account_status
+      doc = get_document
+      return nil if doc.pds_endpoint.nil?
+
+      pds_host = URI(doc.pds_endpoint).origin
+      url = URI("#{pds_host}/xrpc/com.atproto.sync.getRepoStatus")
+      url.query = URI.encode_www_form(:did => @did)
+
+      response = get_response(url, { timeout: 15, max_redirects: 5 })
+      status = response.code.to_i
+      is_json = (response['Content-Type'] =~ /^application\/json(;.*)?$/)
+
+      if status == 200 && is_json
+        json = JSON.parse(response.body)
+
+        if json['active'] == true
+          :active
+        elsif json['active'] == false && json['status'].is_a?(String) && json['status'].length <= 100
+          json['status'].to_sym
+        else
+          raise APIError.new(response)
+        end
+      elsif status == 400 && is_json && JSON.parse(response.body)['error'] == 'RepoNotFound'
+        nil
+      else
+        raise APIError.new(response)
+      end
+    end
+
     def account_exists?
       doc = get_document
       return false if doc.pds_endpoint.nil?
