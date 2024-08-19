@@ -22,6 +22,8 @@ module DIDKit
         @last_date = Time.now
         @eof = true
       end
+
+      @last_page_cids = []
     end
 
     def plc_service
@@ -57,16 +59,22 @@ module DIDKit
       query = @last_date ? { :after => @last_date.utc.iso8601(6) } : {}
       rows = get_export(query)
 
-      operations = rows.filter_map do |json|
+      operations = rows.filter_map { |json|
         begin
           PLCOperation.new(json)
         rescue PLCOperation::FormatError, AtHandles::FormatError, ServiceRecord::FormatError => e
           @error_handler ? @error_handler.call(e, json) : raise
           nil
         end
-      end
+      }.reject { |op|
+        # when you pass the most recent op's timestamp to ?after, it will be returned as the first op again,
+        # so we need to use this CID list to filter it out (so pages will usually be 999 items long)
+
+        @last_page_cids.include?(op.cid)
+      }
 
       @last_date = operations.last&.created_at || request_time
+      @last_page_cids = Set.new(operations.map(&:cid))
       @eof = (rows.length < MAX_PAGE)
 
       operations
