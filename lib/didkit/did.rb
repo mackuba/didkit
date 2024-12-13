@@ -29,6 +29,10 @@ module DIDKit
 
     alias to_s did
 
+    def document
+      @document ||= get_document
+    end
+
     def get_document
       Resolver.new.resolve_did(self)
     end
@@ -70,7 +74,7 @@ module DIDKit
     end
 
     def account_status
-      doc = get_document
+      doc = self.document
       return nil if doc.pds_endpoint.nil?
 
       pds_host = URI(doc.pds_endpoint).origin
@@ -99,7 +103,7 @@ module DIDKit
     end
 
     def account_exists?
-      doc = get_document
+      doc = self.document
       return false if doc.pds_endpoint.nil?
 
       pds_host = URI(doc.pds_endpoint).origin
