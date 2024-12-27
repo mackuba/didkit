@@ -19,5 +19,8 @@ module DIDKit
     def labeler_host
       labeler_endpoint&.then { |x| URI(x).host }
     end
+
+    alias labeller_endpoint labeler_endpoint
+    alias labeller_host labeler_host
   end
 end
