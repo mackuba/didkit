@@ -53,26 +53,6 @@ module DIDKit
       did.gsub(/^did\:web\:/, '') if type == :web
     end
 
-    def is_known_by_relay?(relay, options = {})
-      relay_host = relay.include?('://') ? URI(relay).origin : "https://#{relay}"
-      url = URI("#{relay_host}/xrpc/com.atproto.sync.getLatestCommit")
-      url.query = URI.encode_www_form(:did => did)
-
-      response = get_response(url, { timeout: 30, max_redirects: 5 }.merge(options))
-      status = response.code.to_i
-      is_json = (response['Content-Type'] =~ /^application\/json(;.*)?$/)
-
-      if status == 200
-        true
-      elsif status == 400 && is_json && JSON.parse(response.body)['error'] == 'RepoNotFound'
-        false
-      elsif status == 404 && is_json && JSON.parse(response.body)['error']
-        false
-      else
-        raise APIError.new(response)
-      end
-    end
-
     def account_status
       doc = self.document
       return nil if doc.pds_endpoint.nil?
@@ -100,14 +80,6 @@ module DIDKit
       else
         raise APIError.new(response)
       end
-    end
-
-    def account_exists?
-      doc = self.document
-      return false if doc.pds_endpoint.nil?
-
-      pds_host = URI(doc.pds_endpoint).origin
-      is_known_by_relay?(pds_host, timeout: 10)
     end
 
     def ==(other)
