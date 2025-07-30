@@ -1,6 +1,3 @@
-require 'json'
-require 'open-uri'
-require 'net/http'
 require 'resolv'
 
 require_relative 'did'
@@ -83,14 +80,12 @@ module DIDKit
     end
 
     def resolve_did_plc(did)
-      url = "https://plc.directory/#{did}"
-      json = JSON.parse(URI.open(url).read)
+      json = get_json("https://plc.directory/#{did}", content_type: /^application\/did\+ld\+json(;.+)?$/)
       Document.new(did, json)
     end
 
     def resolve_did_web(did)
-      url = "https://#{did.web_domain}/.well-known/did.json"
-      json = JSON.parse(URI.open(url).read)
+      json = get_json("https://#{did.web_domain}/.well-known/did.json")
       Document.new(did, json)
     end
 

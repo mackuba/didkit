@@ -1,3 +1,5 @@
+require 'json'
+
 require_relative 'errors'
 require_relative 'requests'
 require_relative 'resolver'

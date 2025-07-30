@@ -1,13 +1,15 @@
 require 'json'
-require 'open-uri'
 require 'time'
 
 require_relative 'plc_operation'
+require_relative 'requests'
 
 module DIDKit
   class PLCImporter
     PLC_SERVICE = 'plc.directory'
     MAX_PAGE = 1000
+
+    include Requests
 
     attr_accessor :ignore_errors, :last_date, :error_handler
 
@@ -44,13 +46,13 @@ module DIDKit
       url = URI("https://#{plc_service}/export")
       url.query = URI.encode_www_form(args)
 
-      data = URI.open(url).read
+      data = get_data(url, content_type: 'application/jsonlines')
       data.lines.map(&:strip).reject(&:empty?).map { |x| JSON.parse(x) }
     end
 
     def fetch_audit_log(did)
-      response = URI.open("https://#{plc_service}/#{did}/log/audit").read
-      JSON.parse(response).map { |j| PLCOperation.new(j) }
+      json = get_json("https://#{plc_service}/#{did}/log/audit", :content_type => :json)
+      json.map { |j| PLCOperation.new(j) }
     end      
 
     def fetch_page
