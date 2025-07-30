@@ -1,3 +1,7 @@
+require 'json'
+require 'net/http'
+require 'uri'
+
 module DIDKit
   module Requests
     def get_response(url, options = {})
@@ -34,6 +38,38 @@ module DIDKit
         else
           return response
         end
+      end
+    end
+
+    def get_data(url, options = {})
+      content_type = options.delete(:content_type)
+      response = get_response(url, options)
+
+      if response.is_a?(Net::HTTPSuccess) && content_type_matches(response, content_type) && (data = response.body)
+        data
+      else
+        raise APIError.new(response)
+      end
+    end
+
+    def get_json(url, options = {})
+      JSON.parse(get_data(url, options))
+    end
+
+    def content_type_matches(response, expected_type)
+      content_type = response['Content-Type']
+
+      case expected_type
+      when String
+        content_type == expected_type
+      when Regexp
+        content_type =~ expected_type
+      when :json
+        content_type =~ /^application\/json(;.*)?$/
+      when nil
+        true
+      else
+        raise ArgumentError, "Invalid expected_type: #{expected_type.inspect}"
       end
     end
   end
