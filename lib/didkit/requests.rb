@@ -11,7 +11,7 @@ module DIDKit::Requests
     }
 
     redirects = 0
-    max_redirects = options[:max_redirects] || 0
+    max_redirects = options[:max_redirects] || 5
 
     loop do
       response = Net::HTTP.start(url.host, url.port, request_options) do |http|

@@ -10,7 +10,6 @@ require_relative 'requests'
 module DIDKit
   class Resolver
     RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
-    MAX_REDIRECTS = 5
 
     include Requests
 
@@ -50,7 +49,7 @@ module DIDKit
 
     def resolve_handle_by_well_known(domain)
       url = "https://#{domain}/.well-known/atproto-did"
-      response = get_response(url, max_redirects: MAX_REDIRECTS)
+      response = get_response(url)
 
       if response.is_a?(Net::HTTPSuccess) && (text = response.body)
         return parse_did_from_well_known(text)

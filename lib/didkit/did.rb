@@ -61,7 +61,7 @@ module DIDKit
       url = URI("#{pds_host}/xrpc/com.atproto.sync.getRepoStatus")
       url.query = URI.encode_www_form(:did => @did)
 
-      response = get_response(url, { max_redirects: 5 })
+      response = get_response(url)
       status = response.code.to_i
       is_json = (response['Content-Type'] =~ /^application\/json(;.*)?$/)
 
