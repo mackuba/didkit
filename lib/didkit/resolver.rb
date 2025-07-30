@@ -50,7 +50,7 @@ module DIDKit
 
     def resolve_handle_by_well_known(domain)
       url = "https://#{domain}/.well-known/atproto-did"
-      response = get_response(url, timeout: 10, max_redirects: MAX_REDIRECTS)
+      response = get_response(url, max_redirects: MAX_REDIRECTS)
 
       if response.is_a?(Net::HTTPSuccess) && (text = response.body)
         return parse_did_from_well_known(text)

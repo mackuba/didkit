@@ -1,12 +1,14 @@
 module DIDKit::Requests
   def get_response(url, options = {})
     url = URI(url) unless url.is_a?(URI)
-    request_options = { use_ssl: true }
 
-    if timeout = options[:timeout]
-      request_options[:open_timeout] = timeout
-      request_options[:read_timeout] = timeout
-    end
+    timeout = options[:timeout] || 15
+
+    request_options = {
+      use_ssl: true,
+      open_timeout: timeout,
+      read_timeout: timeout
+    }
 
     redirects = 0
     max_redirects = options[:max_redirects] || 0
