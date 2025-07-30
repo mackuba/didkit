@@ -37,8 +37,8 @@ module DIDKit
       @handles = parse_also_known_as(json['alsoKnownAs'] || [])
     end
 
-    def get_validated_handle
-      Resolver.new.pick_valid_handle(did, handles)
+    def get_verified_handle
+      Resolver.new.get_verified_handle(self)
     end
   end
 end

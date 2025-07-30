@@ -89,14 +89,14 @@ module DIDKit
       Document.new(did, json)
     end
 
-    def get_validated_handle(did_or_doc)
-      document = did_or_doc.is_a?(Document) ? did_or_doc : resolve_did(did_or_doc)
+    def get_verified_handle(subject)
+      document = subject.is_a?(Document) ? subject : resolve_did(subject)
 
-      pick_valid_handle(document.did, document.handles)
+      pick_verified_handle(document.did, document.handles)
     end
 
-    def pick_valid_handle(did, handles)
-      handles.detect { |h| resolve_handle(h) == did }
+    def pick_verified_handle(did, handles)
+      handles.detect { |h| resolve_handle(h) == did.to_s }
     end
   end
 end

@@ -39,8 +39,8 @@ module DIDKit
       Resolver.new.resolve_did(self)
     end
 
-    def get_validated_handle
-      Resolver.new.get_validated_handle(self)
+    def get_verified_handle
+      Resolver.new.get_verified_handle(document)
     end
 
     def get_audit_log
