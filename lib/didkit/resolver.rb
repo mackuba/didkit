@@ -17,6 +17,7 @@ module DIDKit
 
     def initialize(options = {})
       @nameserver = options[:nameserver]
+      @request_options = options.slice(:timeout, :max_redirects)
     end
 
     def resolve_handle(handle)
@@ -49,7 +50,7 @@ module DIDKit
 
     def resolve_handle_by_well_known(domain)
       url = "https://#{domain}/.well-known/atproto-did"
-      response = get_response(url)
+      response = get_response(url, @request_options)
 
       if response.is_a?(Net::HTTPSuccess) && (text = response.body)
         return parse_did_from_well_known(text)

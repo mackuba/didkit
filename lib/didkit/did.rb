@@ -53,7 +53,7 @@ module DIDKit
       did.gsub(/^did\:web\:/, '') if type == :web
     end
 
-    def account_status
+    def account_status(request_options = {})
       doc = self.document
       return nil if doc.pds_endpoint.nil?
 
@@ -61,7 +61,7 @@ module DIDKit
       url = URI("#{pds_host}/xrpc/com.atproto.sync.getRepoStatus")
       url.query = URI.encode_www_form(:did => @did)
 
-      response = get_response(url)
+      response = get_response(url, request_options)
       status = response.code.to_i
       is_json = (response['Content-Type'] =~ /^application\/json(;.*)?$/)
 
