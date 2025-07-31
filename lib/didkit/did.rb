@@ -88,6 +88,10 @@ module DIDKit
       account_status == :active
     end
 
+    def account_exists?
+      account_status != nil
+    end
+
     def ==(other)
       if other.is_a?(String)
         self.did == other
