@@ -3,7 +3,7 @@
 A small Ruby gem for handling Distributed Identifiers (DIDs) in Bluesky / AT Protocol.
 
 > [!NOTE]
-> ATProto Ruby gems collection: [skyfall](https://github.com/mackuba/skyfall) | [blue_factory](https://github.com/mackuba/blue_factory) | [minisky](https://github.com/mackuba/minisky) | [didkit](https://github.com/mackuba/didkit)
+> Part of ATProto Ruby SDK: [ruby.sdk.blue](https://ruby.sdk.blue)
 
 
 ## What does it do
