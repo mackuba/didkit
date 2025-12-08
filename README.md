@@ -13,72 +13,96 @@ Accounts on Bluesky use identifiers like [did:plc:oio4hkxaop4ao4wz2pp3f4cr](http
 
 ## Installation
 
+From the command line:
+
     gem install didkit
+
+Or, add this to your `Gemfile`:
+
+    gem 'didkit', '~> 0.3'
 
 
 ## Usage
 
-Use the `DIDKit::Resolver` class to look up DIDs and handles.
-
-To look up a handle:
+The simplest way to use the gem is through the `DIDKit::DID` class, aliased as just `DID`:
 
 ```rb
-resolver = DIDKit::Resolver.new
-resolver.resolve_handle('nytimes.com')
- # => #<DIDKit::DID:0x00000001035956b0 @did="did:plc:eclio37ymobqex2ncko63h4r", @type=:plc, @resolved_by=:dns>
+did = DID.resolve_handle('jay.bsky.team')
+  # => #<DIDKit::DID:0x0... @did="did:plc:oky5czdrnfjpqslsw2a5iclo",
+  #       @resolved_by=:dns, @type=:plc>
 ```
 
-This returns an object of `DIDKit::DID` class (aliased as just `DID`), which tells you:
+This returns a `DID` object, which tells you:
 
 - the DID as a string (`#to_s` or `#did`)
 - the DID type (`#type`, `:plc` or `:web`)
 - if the handle was resolved via a DNS entry or a `.well-known` file (`#resolved_by`, `:dns` or `:http`)
 
-To go in the other direction – to find an assigned and verified handle given a DID – use `get_validated_handle` (pass DID as a string or an object):
+To go in the other direction – to find an assigned and verified handle given a DID – create a `DID` from a DID string and call `get_verified_handle`:
 
 ```rb
-resolver.get_validated_handle('did:plc:ewvi7nxzyoun6zhxrhs64oiz')
- # => "atproto.com" 
+DID.new('did:plc:ewvi7nxzyoun6zhxrhs64oiz').get_verified_handle
+  # => "atproto.com"
 ```
 
-You can also load the DID document using `resolve_did`:
+You can also load the DID JSON document using `#document`, which returns a `DIDKit::Document` (`DID` caches the document, so don't worry about calling this method multiple times):
 
 ```rb
-doc = resolver.resolve_did('did:plc:ragtjsm2j2vknwkz3zp4oxrd')
- # => #<DIDKit::Document:0x0000000105d751f8 @did=#<DIDKit::DID:...>, @json={...}>
+did = DID.new('did:plc:ragtjsm2j2vknwkz3zp4oxrd')
 
-doc.handles
- # => ["pfrazee.com"] 
+did.document.handles
+  # => ["pfrazee.com"]
 
-doc.pds_endpoint
- # => "https://morel.us-east.host.bsky.network" 
+did.document.pds_host
+  # => "morel.us-east.host.bsky.network"
 ```
 
-There are also some helper methods in the `DID` class that create a `Resolver` for you to save you some typing:
+
+### Checking account status
+
+`DIDKit::DID` also includes a few methods for checking the status of a given account (repo), which call the `com.atproto.sync.getRepoStatus` endpoint on the account's assigned PDS:
 
 ```rb
-did = DID.resolve_handle('jay.bsky.team')
- #  => #<DIDKit::DID:0x000000010615ed28 @did="did:plc:oky5czdrnfjpqslsw2a5iclo", @type=:plc, @resolved_by=:dns>
+did = DID.new('did:plc:ch7azdejgddtlijyzurfdihn')
+did.account_status
+  # => :takendown
+did.account_active?
+  # => false
+did.account_exists?
+  # => true
 
-did.to_s
- # => "did:plc:oky5czdrnfjpqslsw2a5iclo" 
-
-did.get_document
- # => #<DIDKit::Document:0x00000001066d4898 @did=#<DIDKit::DID:...>, @json={...}>
-
-did.get_validated_handle
- # => "jay.bsky.team" 
+did = DID.new('did:plc:44ybard66vv44zksje25o7dz')
+did.account_status
+  # => :active
+did.account_active?
+  # => true
 ```
-
 
 ### Configuration
 
-You can override the nameserver used for DNS lookups by setting the `nameserver` property in `Resolver`, e.g. to use Google's or CloudFlare's global DNS:
+You can customize some things about the DID/handle lookups by using the `DIDKit::Resolver` class, which the methods in `DID` use behind the scenes.
 
-```
-resolver.nameserver = '8.8.8.8'
-```
+Currently available options include:
 
+- `:nameserver` - override the nameserver used for DNS lookups, e.g. to use Google's or CloudFlare's DNS
+- `:timeout` - change the connection/response timeout for HTTP requests (default: 15 s)
+- `:max_redirects` - change allowed maximum number of redirects (default: 5)
+
+Example:
+
+```rb
+resolver = DIDKit::Resolver.new(nameserver: '8.8.8.8', timeout: 30)
+
+did = resolver.resolve_handle('nytimes.com')
+  # => #<DIDKit::DID:0x0... @did="did:plc:eclio37ymobqex2ncko63h4r",
+  #       @resolved_by=:dns, @type=:plc>
+
+resolver.resolve_did(did)
+  # => #<DIDKit::Document:0x0... @did=#<DIDKit::DID:...>, @json={...}>
+
+resolver.get_verified_handle(did)
+  # => 'nytimes.com'
+```
 
 ## Credits
 
