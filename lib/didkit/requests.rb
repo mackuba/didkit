@@ -2,6 +2,8 @@ require 'json'
 require 'net/http'
 require 'uri'
 
+require_relative 'errors'
+
 module DIDKit
   module Requests
     def get_response(url, options = {})

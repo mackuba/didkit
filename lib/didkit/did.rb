@@ -1,4 +1,5 @@
 require 'json'
+require 'uri'
 
 require_relative 'errors'
 require_relative 'requests'

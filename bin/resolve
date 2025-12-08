@@ -3,8 +3,9 @@
 
 $LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
 
-require "bundler/setup"
-require "didkit"
+require 'bundler/setup'
+require 'didkit'
+require 'json'
 
 resolver = DIDKit::Resolver.new(nameserver: '8.8.8.8')
 

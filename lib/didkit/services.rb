@@ -1,3 +1,5 @@
+require 'uri'
+
 module DIDKit
   module Services
     def get_service(key, type)

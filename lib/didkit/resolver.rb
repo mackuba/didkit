@@ -1,3 +1,4 @@
+require 'net/http'
 require 'resolv'
 
 require_relative 'did'

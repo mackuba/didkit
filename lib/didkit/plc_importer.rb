@@ -1,5 +1,6 @@
 require 'json'
 require 'time'
+require 'uri'
 
 require_relative 'plc_operation'
 require_relative 'requests'
