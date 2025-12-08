@@ -92,10 +92,10 @@ module DIDKit
     def get_verified_handle(subject)
       document = subject.is_a?(Document) ? subject : resolve_did(subject)
 
-      pick_verified_handle(document.did, document.handles)
+      first_verified_handle(document.did, document.handles)
     end
 
-    def pick_verified_handle(did, handles)
+    def first_verified_handle(did, handles)
       handles.detect { |h| resolve_handle(h) == did.to_s }
     end
   end
