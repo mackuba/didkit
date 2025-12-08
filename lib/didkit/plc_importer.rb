@@ -5,6 +5,11 @@ require 'uri'
 require_relative 'plc_operation'
 require_relative 'requests'
 
+#
+# NOTE: this class is pending a rewrite once new APIs are deployed to plc.directory.
+# Things will change here in v. 0.4.
+#
+
 module DIDKit
   class PLCImporter
     PLC_SERVICE = 'plc.directory'
