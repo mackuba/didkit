@@ -1,3 +1,26 @@
+## [0.3.0] - 2025-12-15
+
+Breaking changes:
+
+* removed `DID#is_known_by_relay?` – it doesn't work anymore, since relays are now non-archival and they expose almost no XRPC routes
+* renamed a few handle-related methods:
+  - `get_validated_handle` -> `get_verified_handle`
+  - `pick_valid_handle` -> `first_verified_handle`
+
+Also:
+
+- added `DID#account_status` method, which checks `getRepoStatus` endpoint to tell if an account is active, deactivated, taken down etc.
+- added `DID#account_active?` helper (`account_status == :active`)
+- `DID#account_exists?` now calls `getRepoStatus` (via `account_status`, checking if it's not nil) instead of `getLatestCommit`
+- added `DID#document` which keeps a memoized copy of the document
+- added `pds_host` & `labeler_host` methods to `PLCOperation` and `Document`, which return the PDS/labeller address without the `https://`
+- added `labeller_endpoint` & `labeller_host` aliases for the double-L enjoyers :]
+- added `PLCOperation#cid`
+- `PLCImporter` now removes duplicate operations at the edge of pages returned from the `/export` API
+- rewritten some networking code – all classes now use `Net::HTTP` with consistent options instead of `open-uri`
+
+Note: `PLCImporter` will be rewritten soon to add support for updated [plc.directory](https://plc.directory) APIs, so be prepared for some breaking changes there in v. 0.4.
+
 ## [0.2.3] - 2024-07-02
 
 - added a `DID#get_audit_log` method that fetches the PLC audit log for a DID
