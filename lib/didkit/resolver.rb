@@ -19,6 +19,10 @@ module DIDKit
     end
 
     def resolve_handle(handle)
+      if handle =~ DID::GENERIC_REGEXP
+        return DID.new(handle)
+      end
+
       domain = handle.gsub(/^@/, '')
 
       return nil if RESERVED_DOMAINS.include?(domain.split('.').last)
@@ -71,7 +75,7 @@ module DIDKit
 
     def parse_did_from_well_known(text)
       text = text.strip
-      text.lines.length == 1 && text =~ /\Adid\:\w+\:.*\z/ ? text : nil
+      text.lines.length == 1 && text =~ DID::GENERIC_REGEXP ? text : nil
     end
 
     def resolve_did(did)

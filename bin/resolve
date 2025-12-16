@@ -12,7 +12,7 @@ resolver = DIDKit::Resolver.new(nameserver: '8.8.8.8')
 begin
   query = ARGV[0].to_s
 
-  if query =~ /^did\:/
+  if query =~ DID::GENERIC_REGEXP
     did = DID.new(query)
   elsif query =~ /^@[\w\-]+(\.[\w\-]+)+$/
     did = resolver.resolve_handle(query)

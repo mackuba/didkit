@@ -7,6 +7,8 @@ require_relative 'resolver'
 
 module DIDKit
   class DID
+    GENERIC_REGEXP = /\Adid\:\w+\:.+\z/
+
     include Requests
 
     def self.resolve_handle(handle)
@@ -16,9 +18,9 @@ module DIDKit
     attr_reader :type, :did, :resolved_by
 
     def initialize(did, resolved_by = nil)
-      if did =~ /^did\:(\w+)\:/
+      if did =~ GENERIC_REGEXP
         @did = did
-        @type = $1.to_sym
+        @type = did.split(':')[1].to_sym
       else
         raise DIDError.new("Invalid DID format")
       end
