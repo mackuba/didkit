@@ -18,6 +18,10 @@ module DIDKit
     attr_reader :type, :did, :resolved_by
 
     def initialize(did, resolved_by = nil)
+      if did.is_a?(DID)
+        did = did.to_s
+      end
+
       if did =~ GENERIC_REGEXP
         @did = did
         @type = did.split(':')[1].to_sym

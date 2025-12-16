@@ -19,7 +19,7 @@ module DIDKit
     end
 
     def resolve_handle(handle)
-      if handle =~ DID::GENERIC_REGEXP
+      if handle.is_a?(DID) || handle =~ DID::GENERIC_REGEXP
         return DID.new(handle)
       end
 
