@@ -1,0 +1,26 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/multikey/v1",
+    "https://w3id.org/security/suites/secp256k1-2019/v1"
+  ],
+  "id": "did:web:witchcraft.systems",
+  "alsoKnownAs": [
+    "at://witchcraft.systems"
+  ],
+  "verificationMethod": [
+    {
+      "id": "did:web:witchcraft.systems#atproto",
+      "type": "Multikey",
+      "controller": "did:web:witchcraft.systems",
+      "publicKeyMultibase": "zQ3shqRWPzo6kSi1PDn1VXTVeaRiigsK3bxKLQ1gQ6UHqnVxW"
+    }
+  ],
+  "service": [
+    {
+      "id": "#atproto_pds",
+      "type": "AtprotoPersonalDataServer",
+      "serviceEndpoint": "https://pds.witchcraft.systems"
+    }
+  ]
+}
