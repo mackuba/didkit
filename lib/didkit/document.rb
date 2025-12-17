@@ -21,20 +21,24 @@ module DIDKit
       @did = did
       @json = json
 
-      if service = json['service']
-        raise FormatError, "Invalid service data" unless service.is_a?(Array) && service.all? { |x| x.is_a?(Hash) }
+      @services = parse_services(json['service'] || [])
+      @handles = parse_also_known_as(json['alsoKnownAs'] || [])
+    end
 
-        @services = service.filter_map { |x|
-          id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
-          next unless id.is_a?(String) && id.start_with?('#') && type.is_a?(String) && endpoint.is_a?(String)
+    def parse_services(service_data)
+      raise FormatError, "Invalid service data" unless service_data.is_a?(Array) && service_data.all? { |x| x.is_a?(Hash) }
 
-          ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
-        }
-      else
-        @services = []
+      services = []
+
+      service_data.each do |x|
+        id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
+
+        if id.is_a?(String) && id.start_with?('#') && type.is_a?(String) && endpoint.is_a?(String)
+          services << ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+        end
       end
 
-      @handles = parse_also_known_as(json['alsoKnownAs'] || [])
+      services
     end
 
     def get_verified_handle
