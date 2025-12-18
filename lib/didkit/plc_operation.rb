@@ -12,10 +12,11 @@ module DIDKit
     include AtHandles
     include Services
 
-    attr_reader :json, :did, :cid, :created_at, :type, :handles, :services
+    attr_reader :json, :did, :cid, :seq, :created_at, :type, :handles, :services
 
     def initialize(json)
       @json = json
+      @seq = json['seq']
       @did = json['did']
       raise FormatError, "Missing DID: #{json}" if @did.nil?
       raise FormatError, "Invalid DID: #{@did}" unless @did.is_a?(String) && @did.start_with?('did:')
