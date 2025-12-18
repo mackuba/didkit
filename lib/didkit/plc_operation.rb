@@ -16,10 +16,12 @@ module DIDKit
 
     def initialize(json)
       @json = json
+      raise FormatError, "Expected argument to be a Hash, got a #{json.class}" unless @json.is_a?(Hash)
+
       @seq = json['seq']
       @did = json['did']
       raise FormatError, "Missing DID: #{json}" if @did.nil?
-      raise FormatError, "Invalid DID: #{@did}" unless @did.is_a?(String) && @did.start_with?('did:')
+      raise FormatError, "Invalid DID: #{@did.inspect}" unless @did.is_a?(String) && @did.start_with?('did:')
 
       @cid = json['cid']
       raise FormatError, "Missing CID: #{json}" if @cid.nil?
