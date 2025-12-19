@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'didkit'
+require 'json'
 require 'webmock/rspec'
 
 RSpec.configure do |config|
@@ -20,4 +21,8 @@ WebMock.enable!
 
 def load_did_file(name)
   File.read(File.join(__dir__, 'dids', name))
+end
+
+def load_did_json(name)
+  JSON.parse(load_did_file(name))
 end

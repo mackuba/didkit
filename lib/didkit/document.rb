@@ -25,6 +25,12 @@ module DIDKit
       @handles = parse_also_known_as(json['alsoKnownAs'] || [])
     end
 
+    def get_verified_handle
+      Resolver.new.get_verified_handle(self)
+    end
+
+    private
+
     def parse_services(service_data)
       raise FormatError, "Invalid service data" unless service_data.is_a?(Array) && service_data.all? { |x| x.is_a?(Hash) }
 
@@ -39,10 +45,6 @@ module DIDKit
       end
 
       services
-    end
-
-    def get_verified_handle
-      Resolver.new.get_verified_handle(self)
     end
   end
 end
