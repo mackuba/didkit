@@ -26,6 +26,4 @@ Gem::Specification.new do |spec|
   end
 
   spec.require_paths = ["lib"]
-
-  spec.add_dependency 'uri', '>= 0.11.0'
 end

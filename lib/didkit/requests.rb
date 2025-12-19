@@ -30,7 +30,7 @@ module DIDKit
         end
 
         if response.is_a?(Net::HTTPRedirection) && redirects < max_redirects && (location = response['Location'])
-          url = URI(location.include?('://') ? location : (url.origin + location))
+          url = URI(location.include?('://') ? location : (uri_origin(url) + location))
 
           if visited_urls.include?(url)
             return response
@@ -73,6 +73,14 @@ module DIDKit
       else
         raise ArgumentError, "Invalid expected_type: #{expected_type.inspect}"
       end
+    end
+
+    # backported from https://github.com/ruby/uri/pull/30/files for older Rubies
+    def uri_origin(uri)
+      uri = uri.is_a?(URI) ? uri : URI(uri)
+      authority = (uri.port == uri.default_port) ? uri.host : "#{uri.host}:#{uri.port}"
+
+      "#{uri.scheme}://#{authority}"
     end
   end
 end

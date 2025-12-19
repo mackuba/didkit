@@ -66,7 +66,7 @@ module DIDKit
       doc = self.document
       return nil if doc.pds_endpoint.nil?
 
-      pds_host = URI(doc.pds_endpoint).origin
+      pds_host = uri_origin(doc.pds_endpoint)
       url = URI("#{pds_host}/xrpc/com.atproto.sync.getRepoStatus")
       url.query = URI.encode_www_form(:did => @did)
 
