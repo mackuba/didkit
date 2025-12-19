@@ -1,0 +1,209 @@
+[
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "l1YD076TDUDX-wve_BZzhEpyqBpGx2uhcJXIgZWQKqhytnkqp6wEQ0b6VWynd3M6kryd3qxR_LULrFCVsNmtSg",
+      "prev": null,
+      "type": "create",
+      "handle": "bnewbold.bsky.social",
+      "service": "https://bsky.social",
+      "signingKey": "did:key:zQ3shP5TBe1sQfSttXty15FAEHV1DZgcxRZNxvEWnPfLFwLxJ",
+      "recoveryKey": "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg"
+    },
+    "cid": "bafyreihhgaiei7xvnphgkusjgxlxy6nr3qzdaooliuku45ja5khqjrryma",
+    "nullified": false,
+    "createdAt": "2022-12-18T06:56:26.676Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "-SIEZy39UieizioJmWpEI8ZqmecBS_inVaVq_2tlcyQYdvUbViCHtc2DQKutYzQWveeRTMAbTmHIBBf_M_oIVA",
+      "prev": "bafyreihhgaiei7xvnphgkusjgxlxy6nr3qzdaooliuku45ja5khqjrryma",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://bsky.social"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.net"
+      ],
+      "rotationKeys": [
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shP5TBe1sQfSttXty15FAEHV1DZgcxRZNxvEWnPfLFwLxJ"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shP5TBe1sQfSttXty15FAEHV1DZgcxRZNxvEWnPfLFwLxJ"
+      }
+    },
+    "cid": "bafyreig7a2gdfmt6kwos4xoa2h2alokeljinie5fjukn2fbbp373fsdfji",
+    "nullified": false,
+    "createdAt": "2023-03-06T19:01:06.544Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "LorZlvU483a_t2k_j9hajm3vZkRqzXQl-XC9CtMAZ4dm14zoCejzHylpwIet3C1S0YZ-yCPDN3PQxLBBkALz2Q",
+      "prev": "bafyreig7a2gdfmt6kwos4xoa2h2alokeljinie5fjukn2fbbp373fsdfji",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://bsky.social"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.net"
+      ],
+      "rotationKeys": [
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shXjHeiBuRCKmM36cuYnm7YEMzhGnCmCyW92sRJ9pribSF"
+      }
+    },
+    "cid": "bafyreigm2b3fnzdjmnhsddb3qhzwb2vilkzqqjr5fj7lzfgypsddegs7fy",
+    "nullified": false,
+    "createdAt": "2023-03-09T23:18:25.251Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "R-MsyrAQBnhwIns_dT4yMs86Fd-rEX9aGbn67ngyIJdeO258dahP7BU_bQz18rSXIqxPenmEnnd7diJRmdWX1A",
+      "prev": "bafyreigm2b3fnzdjmnhsddb3qhzwb2vilkzqqjr5fj7lzfgypsddegs7fy",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://bsky.social"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.bsky.team"
+      ],
+      "rotationKeys": [
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shXjHeiBuRCKmM36cuYnm7YEMzhGnCmCyW92sRJ9pribSF"
+      }
+    },
+    "cid": "bafyreigypjgiwo73gnoxixhpsaff67zzwoxeol2duxfffvqewfbz5rvv2e",
+    "nullified": false,
+    "createdAt": "2023-04-24T07:09:49.828Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "TvAaRP_RxHG7x5hQPZv604t6WenS67xg0AD8iRJz008_j07UqBf30di1Zg8Xq235JiPGnj2Al9QdnPbxJjussQ",
+      "prev": "bafyreigypjgiwo73gnoxixhpsaff67zzwoxeol2duxfffvqewfbz5rvv2e",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://bsky.social"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.net"
+      ],
+      "rotationKeys": [
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shXjHeiBuRCKmM36cuYnm7YEMzhGnCmCyW92sRJ9pribSF"
+      }
+    },
+    "cid": "bafyreie67o3rtlz422jazne5qzy4zqpidtlzw6rlxgr2ozwydq5wklzf3m",
+    "nullified": false,
+    "createdAt": "2023-09-15T00:54:01.295Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "pw47f-SCQOLWnXSBN5oyQVvcseit4-Mqai1jGEow28EWi4PhZ8r_Y0NX7le9jiFaQStqvqu_B2A4lnYY10Z6Iw",
+      "prev": "bafyreie67o3rtlz422jazne5qzy4zqpidtlzw6rlxgr2ozwydq5wklzf3m",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://morel.us-east.host.bsky.network"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.net"
+      ],
+      "rotationKeys": [
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shULQPBZrbHpyf48oS68ZudUDQNdtWrhV8dafhaTFFUeGP"
+      }
+    },
+    "cid": "bafyreib2o3ojj3kpwybmfbdgukx7dwj63pntiv6kkxiisu7cf6n474l6qi",
+    "nullified": false,
+    "createdAt": "2023-11-06T23:16:23.504Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "I6nqtYbH4oE8ofYIdFHy3ea55q9lv9aQSRh1VJJHYiFk4yFlaMvY_S3e4JNYW-jcyRw2bvQ3rlGGELvg84Y6kQ",
+      "prev": "bafyreib2o3ojj3kpwybmfbdgukx7dwj63pntiv6kkxiisu7cf6n474l6qi",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://morel.us-east.host.bsky.network"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.net"
+      ],
+      "rotationKeys": [
+        "did:key:zDnaemZN1taothXb3MVNZhALxzsu3YzAo8c7axZEpaVGhqzkZ",
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shULQPBZrbHpyf48oS68ZudUDQNdtWrhV8dafhaTFFUeGP",
+        "example": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+      }
+    },
+    "cid": "bafyreib5jp63rwnmhtisdn4x5fpxobp2bzfhalt4tnjg7ox7xhhlxd5wni",
+    "nullified": false,
+    "createdAt": "2025-06-05T20:19:47.205Z"
+  },
+  {
+    "did": "did:plc:44ybard66vv44zksje25o7dz",
+    "operation": {
+      "sig": "jGQssbr9_1QraxGOpNl9v12lwiEeYxhfTmSbAaRufc19YqVqr1YGRrsHYz6wwvINwK4dFEz7S1Qm_0-zdVP3Kw",
+      "prev": "bafyreib5jp63rwnmhtisdn4x5fpxobp2bzfhalt4tnjg7ox7xhhlxd5wni",
+      "type": "plc_operation",
+      "services": {
+        "atproto_pds": {
+          "type": "AtprotoPersonalDataServer",
+          "endpoint": "https://pds.robocracy.org"
+        }
+      },
+      "alsoKnownAs": [
+        "at://bnewbold.net"
+      ],
+      "rotationKeys": [
+        "did:key:zDnaemZN1taothXb3MVNZhALxzsu3YzAo8c7axZEpaVGhqzkZ",
+        "did:key:zQ3shcciz4AvrLyDnUdZLpQys3kyCsesojRNzJAieyDStGxGo"
+      ],
+      "verificationMethods": {
+        "atproto": "did:key:zQ3shkke2XfFX6A1aRXkCqXKKF9m9N4GH9NCiRuDNFkpsqFmd",
+        "example": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+      }
+    },
+    "cid": "bafyreiaoaelqu32ngmqd2mt3v3zvek7k34cvo7lvmk3kseuuaag5eptg5m",
+    "nullified": false,
+    "createdAt": "2025-06-06T00:34:40.824Z"
+  }
+]

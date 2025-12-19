@@ -1,13 +1,10 @@
 describe DIDKit::Document do
   subject { described_class }
 
-  let(:did_string) { 'did:plc:yk4dd2qkboz2yv6tpubpc6co' }
-  let(:did) { DID.new(did_string) }
-  let(:json_data) { load_did_json('dholms.json') }
+  let(:did) { DID.new('did:plc:yk4dd2qkboz2yv6tpubpc6co') }
+  let(:base_json) { load_did_json('dholms.json') }
 
   describe '#initialize' do
-    let(:base_json) { json_data }
-
     context 'with valid input' do
       let(:json) { base_json }
 
@@ -39,7 +36,7 @@ describe DIDKit::Document do
     end
 
     context 'when id is missing' do
-      let(:json) { base_json.dup.tap { |h| h.delete('id') } }
+      let(:json) { base_json.dup.tap { |h| h.delete('id') }}
 
       it 'should raise a format error' do
         expect {
@@ -149,7 +146,7 @@ describe DIDKit::Document do
 
   describe 'service helpers' do
     let(:service_json) {
-      json_data.merge('service' => [
+      base_json.merge('service' => [
         { 'id' => '#atproto_pds', 'type' => 'AtprotoPersonalDataServer', 'serviceEndpoint' => 'https://pds.dholms.xyz' },
         { 'id' => '#atproto_labeler', 'type' => 'AtprotoLabeler', 'serviceEndpoint' => 'https://labels.dholms.xyz' },
         { 'id' => '#lycan', 'type' => 'LycanService', 'serviceEndpoint' => 'https://lycan.feeds.blue' }
@@ -216,7 +213,7 @@ describe DIDKit::Document do
 
     describe 'if there is no matching service' do
       let(:service_json) {
-        json_data.merge('service' => [
+        base_json.merge('service' => [
           { 'id' => '#lycan', 'type' => 'LycanService', 'serviceEndpoint' => 'https://lycan.feeds.blue' }
         ])
       }
