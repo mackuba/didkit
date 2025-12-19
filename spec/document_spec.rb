@@ -174,7 +174,7 @@ describe DIDKit::Document do
       end
     end
 
-    describe '#pds_host' do
+    describe '#labeler_host' do
       it 'should return the host part of #atproto_labeler endpoint' do
         doc = subject.new(did, service_json)
         doc.labeler_host.should == 'labels.dholms.xyz'

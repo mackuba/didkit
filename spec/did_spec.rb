@@ -114,4 +114,125 @@ describe DIDKit::DID do
       did.to_s.should == plc_did
     end
   end
+
+  describe 'account status' do
+    let(:document) { stub(:pds_endpoint => 'https://pds.ruby.space') }
+    let(:did) { subject.new(plc_did) }
+
+    before do
+      did.stubs(:document).returns(document)
+
+      stub_request(:get, 'https://pds.ruby.space/xrpc/com.atproto.sync.getRepoStatus')
+        .with(query: { did: plc_did })
+        .to_return(http_response) if defined?(http_response)
+    end
+
+    context 'when repo is active' do
+      let(:http_response) {
+        { body: { active: true }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should report active account state' do
+        did.account_status.should == :active
+        did.account_active?.should == true
+        did.account_exists?.should == true
+      end
+    end
+
+    context 'when repo is inactive' do
+      let(:http_response) {
+        { body: { active: false, status: 'takendown' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should report an inactive existing account' do
+        did.account_status.should == :takendown
+        did.account_active?.should == false
+        did.account_exists?.should == true
+      end
+    end
+
+    context 'when repo is not found' do
+      let(:http_response) {
+        { status: 400, body: { error: 'RepoNotFound' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should return nil status and report the account as missing' do
+        did.account_status.should be_nil
+        did.account_active?.should == false
+        did.account_exists?.should == false
+      end
+    end
+
+    context 'when the document has no pds endpoint' do
+      before do
+        did.stubs(:document).returns(stub(:pds_endpoint => nil))
+      end
+
+      it 'should return nil status and report the account as missing' do
+        did.account_status.should be_nil
+        did.account_active?.should == false
+        did.account_exists?.should == false
+      end
+    end
+
+    context 'when active field is not set' do
+      let(:http_response) {
+        { body: { active: nil, status: 'unknown' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should raise APIError' do
+        expect { did.account_status }.to raise_error(DIDKit::APIError)
+        expect { did.account_active? }.to raise_error(DIDKit::APIError)
+        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+      end
+    end
+
+    context 'when active is false but status is not set' do
+      let(:http_response) {
+        { body: { active: false, status: nil }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should raise APIError' do
+        expect { did.account_status }.to raise_error(DIDKit::APIError)
+        expect { did.account_active? }.to raise_error(DIDKit::APIError)
+        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+      end
+    end
+
+    context 'when an error different than RepoNotFound is returned' do
+      let(:http_response) {
+        { status: 400, body: { error: 'UserIsJerry' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should raise APIError' do
+        expect { did.account_status }.to raise_error(DIDKit::APIError)
+        expect { did.account_active? }.to raise_error(DIDKit::APIError)
+        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+      end
+    end
+
+    context 'when the response is not application/json' do
+      let(:http_response) {
+        { status: 400, body: 'error', headers: { 'Content-Type' => 'text/html' }}
+      }
+
+      it 'should raise APIError' do
+        expect { did.account_status }.to raise_error(DIDKit::APIError)
+        expect { did.account_active? }.to raise_error(DIDKit::APIError)
+        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+      end
+    end
+
+    context 'when the response is not 200 or 400' do
+      let(:http_response) {
+        { status: 500, body: { error: 'RepoNotFound' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should raise APIError' do
+        expect { did.account_status }.to raise_error(DIDKit::APIError)
+        expect { did.account_active? }.to raise_error(DIDKit::APIError)
+        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+      end
+    end
+  end
 end

@@ -208,5 +208,151 @@ describe DIDKit::PLCOperation do
         expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
       end
     end
+
+    context 'when a service entry is missing fields' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_pds" => {
+              "endpoint" => "https://pds.dholms.xyz"
+            },
+            "atproto_labeler" => {
+              "type" => "AtprotoLabeler",
+              "endpoint" => "https://labeler.example.com"
+            }
+          }
+        }
+      }
+
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+      end
+    end
+
+    context 'when services are valid' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_pds" => {
+              "type" => "AtprotoPersonalDataServer",
+              "endpoint" => "https://pds.dholms.xyz"
+            },
+            "atproto_labeler" => {
+              "type" => "AtprotoLabeler",
+              "endpoint" => "https://labeler.example.com"
+            },
+            "custom_service" => {
+              "type" => "OtherService",
+              "endpoint" => "https://custom.example.com"
+            }
+          }
+        }
+      }
+
+      it 'should parse services into ServiceRecords' do
+        op = subject.new(json)
+
+        op.services.length.should == 3
+        op.services.each { |s| s.should be_a(DIDKit::ServiceRecord) }
+
+        pds, labeller, custom = op.services
+
+        pds.type.should == 'AtprotoPersonalDataServer'
+        pds.endpoint.should == 'https://pds.dholms.xyz'
+
+        labeller.type.should == 'AtprotoLabeler'
+        labeller.endpoint.should == 'https://labeler.example.com'
+
+        custom.type.should == 'OtherService'
+        custom.endpoint.should == 'https://custom.example.com'
+      end
+
+      it 'should allow fetching services by key + type' do
+        op = subject.new(json)
+
+        custom = op.get_service('custom_service', 'OtherService')
+        custom.should be_a(DIDKit::ServiceRecord)
+        custom.endpoint.should == 'https://custom.example.com'
+      end
+
+      describe '#pds_endpoint' do
+        it 'should return the endpoint of #atproto_pds' do
+          op = subject.new(json)
+          op.pds_endpoint.should == 'https://pds.dholms.xyz'
+        end
+      end
+
+      describe '#pds_host' do
+        it 'should return the host part of #atproto_pds endpoint' do
+          op = subject.new(json)
+          op.pds_host.should == 'pds.dholms.xyz'
+        end
+      end
+
+      describe '#labeler_endpoint' do
+        it 'should return the endpoint of #atproto_labeler' do
+          op = subject.new(json)
+          op.labeler_endpoint.should == 'https://labeler.example.com'
+        end
+      end
+
+      describe '#labeler_host' do
+        it 'should return the host part of #atproto_labeler endpoint' do
+          op = subject.new(json)
+          op.labeler_host.should == 'labeler.example.com'
+        end
+      end
+
+      it 'should expose the "labeller" aliases for endpoint and host' do
+        op = subject.new(json)
+
+        op.labeller_endpoint.should == 'https://labeler.example.com'
+        op.labeller_host.should == 'labeler.example.com'
+      end
+    end
+
+    context 'when services are valid but the specific ones are missing' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "custom_service" => {
+              "type" => "CustomService",
+              "endpoint" => "https://custom.example.com"
+            }
+          }
+        }
+      }
+
+      it 'should parse service records' do
+        op = subject.new(json)
+        op.services.length.should == 1
+      end
+
+      describe '#get_service' do
+        it 'should return nil' do
+          op = subject.new(json)
+          other = op.get_service('other_service', 'OtherService')
+          other.should be_nil
+        end
+      end
+
+      describe '#pds_endpoint' do
+        it 'should return nil' do
+          op = subject.new(json)
+          op.pds_endpoint.should be_nil
+          op.pds_host.should be_nil
+        end
+      end
+
+      describe '#labeler_endpoint' do
+        it 'should return nil' do
+          op = subject.new(json)
+          op.labeler_endpoint.should be_nil
+          op.labeller_endpoint.should be_nil
+          op.labeler_host.should be_nil
+          op.labeller_host.should be_nil
+        end
+      end
+    end
   end
 end
