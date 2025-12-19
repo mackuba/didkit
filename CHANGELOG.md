@@ -1,3 +1,11 @@
+## [0.3.1] - 2025-12-19
+
+- allow passing a DID string or object to `#resolve_handle` and just return that DID – so you can have a script that accepts either a handle or a DID, and passes the input to `DID.resolve_handle` without checking which one it is
+- allow passing another DID object to `DID.new` and return a copy of that DID
+- parse `seq` field in `PLCOperation` if included and expose it as a property
+- fixed some errors on Rubies older than 3.2 due to missing `filter_map` and `URI#origin`
+- `PLCOperation` verifies if the argument is a `Hash`
+
 ## [0.3.0] - 2025-12-15
 
 Breaking changes:
