@@ -5,7 +5,15 @@ require 'uri'
 require_relative 'errors'
 
 module DIDKit
+  # HTTP helper methods for fetching data from DID-related endpoints.
   module Requests
+    # Fetch an HTTP response with redirects.
+    #
+    # @param url [String, URI] URL to request.
+    # @param options [Hash] request options.
+    # @option options [Integer] :timeout request timeout in seconds.
+    # @option options [Integer] :max_redirects maximum redirects to follow.
+    # @return [Net::HTTPResponse] the response returned by Net::HTTP.
     def get_response(url, options = {})
       url = URI(url) unless url.is_a?(URI)
 
@@ -43,6 +51,15 @@ module DIDKit
       end
     end
 
+    # Fetch response body data with optional content-type checking.
+    #
+    # @param url [String, URI] URL to request.
+    # @param options [Hash] request options.
+    # @option options [Integer] :timeout request timeout in seconds.
+    # @option options [Integer] :max_redirects maximum redirects to follow.
+    # @option options [String, Regexp, Symbol, nil] :content_type expected content type.
+    # @return [String] response body.
+    # @raise [APIError] when the response status or content type is invalid.
     def get_data(url, options = {})
       content_type = options.delete(:content_type)
       response = get_response(url, options)
@@ -54,10 +71,23 @@ module DIDKit
       end
     end
 
+    # Fetch and parse JSON from a URL.
+    #
+    # @param url [String, URI] URL to request.
+    # @param options [Hash] request options.
+    # @return [Object] parsed JSON.
+    # @raise [APIError] when the response status or content type is invalid.
+    # @raise [JSON::ParserError] when the response body is not valid JSON.
     def get_json(url, options = {})
       JSON.parse(get_data(url, options))
     end
 
+    # Check if the response content type matches the expected type.
+    #
+    # @param response [Net::HTTPResponse] response to check.
+    # @param expected_type [String, Regexp, Symbol, nil] expected content type.
+    # @return [Boolean] whether the content type matches.
+    # @raise [ArgumentError] when expected_type is unsupported.
     def content_type_matches(response, expected_type)
       content_type = response['Content-Type']
 
@@ -76,6 +106,10 @@ module DIDKit
     end
 
     # backported from https://github.com/ruby/uri/pull/30/files for older Rubies
+    # Build an origin string for a URI.
+    #
+    # @param uri [String, URI] URI to normalize.
+    # @return [String] scheme/host/port origin.
     def uri_origin(uri)
       uri = uri.is_a?(URI) ? uri : URI(uri)
       authority = (uri.port == uri.default_port) ? uri.host : "#{uri.host}:#{uri.port}"
