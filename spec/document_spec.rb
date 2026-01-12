@@ -41,7 +41,7 @@ describe DIDKit::Document do
       it 'should raise a format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::Document::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -51,7 +51,7 @@ describe DIDKit::Document do
       it 'should raise a format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::Document::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -61,7 +61,7 @@ describe DIDKit::Document do
       it 'should raise a format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::Document::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -71,7 +71,7 @@ describe DIDKit::Document do
       it 'should raise an AtHandles format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::AtHandles::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -81,7 +81,7 @@ describe DIDKit::Document do
       it 'should raise an AtHandles format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::AtHandles::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -106,7 +106,7 @@ describe DIDKit::Document do
       it 'should raise a format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::Document::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -116,7 +116,7 @@ describe DIDKit::Document do
       it 'should raise a format error' do
         expect {
           subject.new(did, json)
-        }.to raise_error(DIDKit::Document::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 

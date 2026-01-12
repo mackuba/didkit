@@ -1,13 +1,11 @@
 require_relative 'at_handles'
+require_relative 'errors'
 require_relative 'resolver'
 require_relative 'service_record'
 require_relative 'services'
 
 module DIDKit
   class Document
-    class FormatError < StandardError
-    end
-
     include AtHandles
     include Services
 

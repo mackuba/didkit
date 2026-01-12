@@ -18,4 +18,7 @@ module DIDKit
       response.body
     end
   end
+
+  class FormatError < StandardError
+  end
 end

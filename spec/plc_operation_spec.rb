@@ -27,7 +27,7 @@ describe DIDKit::PLCOperation do
       let(:json) { [base_json] }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -35,7 +35,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.tap { |h| h.delete('did') }}
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -43,7 +43,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.merge('did' => 123) }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -51,7 +51,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.merge('did' => 'foobar') }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -59,7 +59,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.tap { |h| h.delete('cid') }}
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -67,7 +67,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.merge('cid' => 700) }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -75,7 +75,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.tap { |h| h.delete('createdAt') }}
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -83,7 +83,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.merge('createdAt' => 123) }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -91,7 +91,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.tap { |h| h.delete('operation') }}
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -99,7 +99,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.merge('operation' => 'invalid') }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -107,7 +107,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.tap { |h| h['operation'].delete('type') }}
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -152,7 +152,7 @@ describe DIDKit::PLCOperation do
       it 'should raise an AtHandles format error' do
         expect {
           subject.new(json)
-        }.to raise_error(DIDKit::AtHandles::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -162,7 +162,7 @@ describe DIDKit::PLCOperation do
       it 'should raise an AtHandles format error' do
         expect {
           subject.new(json)
-        }.to raise_error(DIDKit::AtHandles::FormatError)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -187,7 +187,7 @@ describe DIDKit::PLCOperation do
       let(:json) { base_json.tap { |h| h['operation'].delete('services') }}
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -205,7 +205,7 @@ describe DIDKit::PLCOperation do
       }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -225,7 +225,7 @@ describe DIDKit::PLCOperation do
       }
 
       it 'should raise a format error' do
-        expect { subject.new(json) }.to raise_error(DIDKit::PLCOperation::FormatError)
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
