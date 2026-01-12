@@ -9,6 +9,9 @@ gem 'rake', '~> 13.0'
 gem 'rspec', '~> 3.0'
 gem 'irb'
 
+gem 'rdoc'
+gem 'yard'
+
 gem 'mocha'
 gem 'simplecov'
 gem 'webmock'
