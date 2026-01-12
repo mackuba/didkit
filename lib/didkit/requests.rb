@@ -5,6 +5,11 @@ require 'uri'
 require_relative 'errors'
 
 module DIDKit
+
+  #
+  # @private
+  #
+
   module Requests
 
     private

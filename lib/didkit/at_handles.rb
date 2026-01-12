@@ -1,6 +1,11 @@
 require_relative 'errors'
 
 module DIDKit
+
+  #
+  # @private
+  #
+
   module AtHandles
 
     private
