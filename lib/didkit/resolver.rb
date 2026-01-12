@@ -102,21 +102,6 @@ module DIDKit
       nil
     end
 
-    def resolv_options
-      options = Resolv::DNS::Config.default_config_hash.dup
-      options[:nameserver] = nameserver if nameserver
-      options
-    end
-
-    def parse_did_from_dns(txt)
-      txt =~ /\Adid\=(did\:\w+\:.*)\z/ ? $1 : nil
-    end
-
-    def parse_did_from_well_known(text)
-      text = text.strip
-      text.lines.length == 1 && text =~ DID::GENERIC_REGEXP ? text : nil
-    end
-
     # Resolve a DID to a DID document.
     #
     # Looks up the DID document with the DID's identity details from an appropriate source, i.e. either
@@ -130,16 +115,6 @@ module DIDKit
       did = DID.new(did) if did.is_a?(String)
 
       did.type == :plc ? resolve_did_plc(did) : resolve_did_web(did)
-    end
-
-    def resolve_did_plc(did)
-      json = get_json("https://plc.directory/#{did}", content_type: /^application\/did\+ld\+json(;.+)?$/)
-      Document.new(did, json)
-    end
-
-    def resolve_did_web(did)
-      json = get_json("https://#{did.web_domain}/.well-known/did.json")
-      Document.new(did, json)
     end
 
     # Returns the first verified handle assigned to the given DID.
@@ -165,6 +140,34 @@ module DIDKit
 
     def first_verified_handle(did, handles)
       handles.detect { |h| resolve_handle(h) == did.to_s }
+    end
+
+
+    private
+
+    def resolv_options
+      options = Resolv::DNS::Config.default_config_hash.dup
+      options[:nameserver] = nameserver if nameserver
+      options
+    end
+
+    def parse_did_from_dns(txt)
+      txt =~ /\Adid\=(did\:\w+\:.*)\z/ ? $1 : nil
+    end
+
+    def parse_did_from_well_known(text)
+      text = text.strip
+      text.lines.length == 1 && text =~ DID::GENERIC_REGEXP ? text : nil
+    end
+
+    def resolve_did_plc(did)
+      json = get_json("https://plc.directory/#{did}", content_type: /^application\/did\+ld\+json(;.+)?$/)
+      Document.new(did, json)
+    end
+
+    def resolve_did_web(did)
+      json = get_json("https://#{did.web_domain}/.well-known/did.json")
+      Document.new(did, json)
     end
   end
 end
