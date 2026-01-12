@@ -6,6 +6,9 @@ require_relative 'errors'
 
 module DIDKit
   module Requests
+
+    private
+
     def get_response(url, options = {})
       url = URI(url) unless url.is_a?(URI)
 
