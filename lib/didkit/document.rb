@@ -4,7 +4,9 @@ require_relative 'service_record'
 require_relative 'services'
 
 module DIDKit
+  # Parsed DID document wrapper with helper accessors.
   class Document
+    # Raised when DID document data is invalid.
     class FormatError < StandardError
     end
 
@@ -13,6 +15,11 @@ module DIDKit
 
     attr_reader :json, :did, :handles, :services
 
+    # Create a DID document wrapper.
+    #
+    # @param did [DID] DID object.
+    # @param json [Hash] DID document JSON data.
+    # @raise [FormatError] when required fields are missing or invalid.
     def initialize(did, json)
       raise FormatError, "Missing id field" if json['id'].nil?
       raise FormatError, "Invalid id field" unless json['id'].is_a?(String)
@@ -25,6 +32,9 @@ module DIDKit
       @handles = parse_also_known_as(json['alsoKnownAs'] || [])
     end
 
+    # Return the first verified handle for this document.
+    #
+    # @return [String, nil] verified handle if found.
     def get_verified_handle
       Resolver.new.get_verified_handle(self)
     end
