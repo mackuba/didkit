@@ -1,6 +1,6 @@
 ## [0.3.2] - 2026-02-15
 
-- added YARD API documentation
+- added [YARD API documentation](https://rubydoc.info/gems/didkit/)
 - marked some helper methods in `requests.rb`, `at_handles.rb` and `DIDKit::Resolver` as private
 - merged all "FormatErrors" into one `DIDKit::FormatError`
 - added `frozen_string_literal` directive everywhere to minimize garbage collection
