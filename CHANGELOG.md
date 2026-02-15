@@ -1,3 +1,10 @@
+## [0.3.2] - 2026-02-15
+
+- added YARD API documentation
+- marked some helper methods in `requests.rb`, `at_handles.rb` and `DIDKit::Resolver` as private
+- merged all "FormatErrors" into one `DIDKit::FormatError`
+- added `frozen_string_literal` directive everywhere to minimize garbage collection
+
 ## [0.3.1] - 2025-12-19
 
 - allow passing a DID string or object to `#resolve_handle` and just return that DID – so you can have a script that accepts either a handle or a DID, and passes the input to `DID.resolve_handle` without checking which one it is
