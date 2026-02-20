@@ -81,13 +81,14 @@ module DIDKit
 
       type = operation['type']
       raise FormatError, "Missing operation type: #{json}" if type.nil?
+      raise FormatError, "Invalid operation type: #{type.inspect}" unless type.is_a?(String)
 
       @type = type.to_sym
       return unless @type == :plc_operation
 
       services = operation['services']
       raise FormatError, "Missing services key: #{json}" if services.nil?
-      raise FormatError, "Invalid services data: #{services}" unless services.is_a?(Hash)
+      raise FormatError, "Invalid services data: #{services.inspect}" unless services.is_a?(Hash)
 
       @services = services.map { |k, x|
         type, endpoint = x.values_at('type', 'endpoint')

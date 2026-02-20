@@ -111,6 +111,14 @@ describe DIDKit::PLCOperation do
       end
     end
 
+    context 'when operation type is not a string' do
+      let(:json) { base_json.tap { |h| h['operation']['type'] = 5 }}
+
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+      end
+    end
+
     context 'when operation type is not plc_operation' do
       let(:json) { base_json.tap { |h| h['operation']['type'] = 'other' }}
 

@@ -71,17 +71,15 @@ module DIDKit
     def parse_services(service_data)
       raise FormatError, "Invalid service data" unless service_data.is_a?(Array) && service_data.all? { |x| x.is_a?(Hash) }
 
-      services = []
-
-      service_data.each do |x|
+      service_data.map do |x|
         id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
 
         if id.is_a?(String) && id.start_with?('#') && type.is_a?(String) && endpoint.is_a?(String)
-          services << ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+          ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+        else
+          raise FormatError, "Invalid service data"
         end
       end
-
-      services
     end
   end
 end

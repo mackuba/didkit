@@ -120,7 +120,7 @@ describe DIDKit::Document do
       end
     end
 
-    context 'when service entries are partially valid' do
+    context 'when some service entries are not valid' do
       let(:services) {
         [
           { 'id' => '#atproto_pds', 'type' => 'AtprotoPersonalDataServer', 'serviceEndpoint' => 'https://pds.dholms.xyz' },
@@ -133,13 +133,10 @@ describe DIDKit::Document do
 
       let(:json) { base_json.merge('service' => services) }
 
-      it 'should only keep the valid records' do
-        doc = subject.new(did, json)
-
-        doc.services.length.should == 2
-        doc.services.map(&:key).should == ['atproto_pds', 'lycan']
-        doc.services.map(&:type).should == ['AtprotoPersonalDataServer', 'LycanService']
-        doc.services.map(&:endpoint).should == ['https://pds.dholms.xyz', 'https://lycan.feeds.blue']
+      it 'should raise a format error' do
+        expect {
+          subject.new(did, json)
+        }.to raise_error(DIDKit::FormatError)
       end
     end
   end
