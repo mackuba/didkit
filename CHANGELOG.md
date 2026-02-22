@@ -1,3 +1,7 @@
+## [0.3.3] - 2026-02-22
+
+- fixed old `FormatError` classes mentioned in `PLCImporter`
+
 ## [0.3.2] - 2026-02-15
 
 - added [YARD API documentation](https://rubydoc.info/gems/didkit/)
