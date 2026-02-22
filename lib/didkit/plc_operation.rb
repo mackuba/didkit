@@ -38,15 +38,6 @@ module DIDKit
     # @return [String] the operation type
     attr_reader :type
 
-    # Returns a list of handles assigned to the DID in this operation.
-    #
-    # Note: the handles aren't guaranteed to be verified (validated in the other direction).
-    # Use {DID#get_verified_handle} or {Document#get_verified_handle} to find a handle that is
-    # correctly verified.
-    #
-    # @return [Array<String>]
-    attr_reader :handles
-
     # @return [Array<ServiceRecords>] service records like PDS details assigned to the DID
     attr_reader :services
 
@@ -101,7 +92,7 @@ module DIDKit
         ServiceRecord.new(k, type, endpoint)
       }
 
-      @handles = parse_also_known_as(operation['alsoKnownAs'])
+      parse_also_known_as(operation['alsoKnownAs'])
     end
   end
 end

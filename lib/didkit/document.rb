@@ -24,14 +24,6 @@ module DIDKit
     # @return [DID] the DID that this document describes
     attr_reader :did
 
-    # Returns a list of handles assigned to this DID in its DID document.
-    #
-    # Note: the handles aren't guaranteed to be verified (validated in the other direction).
-    # Use {#get_verified_handle} to find a handle that is correctly verified.
-    #
-    # @return [Array<String>]
-    attr_reader :handles
-
     # @return [Array<ServiceRecords>] service records like PDS details assigned to the DID
     attr_reader :services
 
@@ -49,8 +41,8 @@ module DIDKit
       @did = did
       @json = json
 
-      @services = parse_services(json['service'] || [])
-      @handles = parse_also_known_as(json['alsoKnownAs'] || [])
+      parse_services(json['service'] || [])
+      parse_also_known_as(json['alsoKnownAs'] || [])
     end
 
     # Returns the first verified handle assigned to the DID.
@@ -71,17 +63,15 @@ module DIDKit
     def parse_services(service_data)
       raise FormatError, "Invalid service data" unless service_data.is_a?(Array) && service_data.all? { |x| x.is_a?(Hash) }
 
-      services = []
+      @services = []
 
       service_data.each do |x|
         id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
 
         if id.is_a?(String) && id.start_with?('#') && type.is_a?(String) && endpoint.is_a?(String)
-          services << ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+          @services << ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
         end
       end
-
-      services
     end
   end
 end

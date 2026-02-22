@@ -1,4 +1,6 @@
 --protected
 --no-private
 --markup markdown
+--embed-mixin "DIDKit::AtHandles"
 --embed-mixin "DIDKit::Services"
+
