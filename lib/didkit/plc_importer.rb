@@ -4,6 +4,7 @@ require 'json'
 require 'time'
 require 'uri'
 
+require_relative 'errors'
 require_relative 'plc_operation'
 require_relative 'requests'
 
@@ -72,7 +73,7 @@ module DIDKit
       operations = rows.filter_map { |json|
         begin
           PLCOperation.new(json)
-        rescue PLCOperation::FormatError, AtHandles::FormatError, ServiceRecord::FormatError => e
+        rescue FormatError => e
           @error_handler ? @error_handler.call(e, json) : raise
           nil
         end
