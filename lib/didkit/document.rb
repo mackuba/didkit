@@ -68,8 +68,20 @@ module DIDKit
       service_data.each do |x|
         id, type, endpoint = x.values_at('id', 'type', 'serviceEndpoint')
 
-        if id.is_a?(String) && id.start_with?('#') && type.is_a?(String) && endpoint.is_a?(String)
+        raise FormatError, "Missing service id" unless id
+        raise FormatError, "Invalid service id: #{id.inspect}" unless id.is_a?(String)
+        next if !id.start_with?('#')
+
+        raise FormatError, "Missing service type" unless type
+        raise FormatError, "Invalid service type: #{type.inspect}" unless type.is_a?(String)
+
+        raise FormatError, "Missing service endpoint" unless endpoint
+        raise FormatError, "Invalid service endpoint: #{endpoint.inspect}" unless endpoint.is_a?(String)
+
+        begin
           @services << ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+        rescue FormatError => e
+          # ignore services with invalid URIs
         end
       end
     end

@@ -157,20 +157,16 @@ describe DIDKit::PLCOperation do
     context 'when alsoKnownAs is not an array' do
       let(:json) { base_json.tap { |h| h['operation']['alsoKnownAs'] = 'at://dholms.xyz' }}
 
-      it 'should raise an AtHandles format error' do
-        expect {
-          subject.new(json)
-        }.to raise_error(DIDKit::FormatError)
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
     context 'when alsoKnownAs elements are not strings' do
       let(:json) { base_json.tap { |h| h['operation']['alsoKnownAs'] = [666] }}
 
-      it 'should raise an AtHandles format error' do
-        expect {
-          subject.new(json)
-        }.to raise_error(DIDKit::FormatError)
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
       end
     end
 
@@ -188,6 +184,11 @@ describe DIDKit::PLCOperation do
       it 'should pick those starting with at:// and remove the prefixes' do
         op = subject.new(json)
         op.handles.should == ['dholms.xyz', 'other.handle']
+      end
+
+      it 'should return all entries in #also_known_as' do
+        op = subject.new(json)
+        op.also_known_as.should == ['at://dholms.xyz', 'https://example.com', 'at://other.handle']
       end
     end
 
@@ -217,23 +218,73 @@ describe DIDKit::PLCOperation do
       end
     end
 
-    context 'when a service entry is missing fields' do
+    context 'when a service entry type is missing' do
       let(:json) {
         base_json.tap { |h|
           h['operation']['services'] = {
-            "atproto_pds" => {
-              "endpoint" => "https://pds.dholms.xyz"
-            },
-            "atproto_labeler" => {
-              "type" => "AtprotoLabeler",
-              "endpoint" => "https://labeler.example.com"
-            }
+            "atproto_pds" => { "endpoint" => "https://pds.dholms.xyz" }
           }
         }
       }
 
       it 'should raise a format error' do
         expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+      end
+    end
+
+    context 'when a service entry type is not a string' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_pds" => { "type" => 77, "endpoint" => "https://pds.dholms.xyz" }
+          }
+        }
+      }
+
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+      end
+    end
+
+    context 'when a service entry endpoint is missing' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_pds" => { "type" => "AtprotoPersonalDataServer" }
+          }
+        }
+      }
+
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+      end
+    end
+
+    context 'when a service entry endpoint is not a string' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_pds" => { "type" => "AtprotoPersonalDataServer", "endpoint" => { :host => 'localhost' }}
+          }
+        }
+      }
+
+      it 'should raise a format error' do
+        expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+      end
+    end
+
+    context 'when a service entry endpoint is not an URI' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_pds" => { "type" => "AtprotoPersonalDataServer", "endpoint" => "2 + 2" }
+          }
+        }
+      }
+
+      it 'should *not* raise a format error' do
+        expect { subject.new(json) }.to_not raise_error
       end
     end
 
@@ -360,6 +411,30 @@ describe DIDKit::PLCOperation do
           op.labeler_host.should be_nil
           op.labeller_host.should be_nil
         end
+      end
+    end
+
+    context "when some services have endpoints that aren't valid URIs" do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "atproto_labeler" => {
+              "type" => "AtprotoLabeler",
+              "endpoint" => "bla bla bla"
+            },
+            "custom_service" => {
+              "type" => "OtherService",
+              "endpoint" => "https://custom.example.com"
+            }
+          }
+        }
+      }
+
+      it 'should only return valid services' do
+        op = subject.new(json)
+
+        op.services.length.should == 1
+        op.services[0].type == 'OtherService'
       end
     end
   end

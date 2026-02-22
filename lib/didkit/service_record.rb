@@ -26,6 +26,7 @@ module DIDKit
     # @param key [String] service identifier (without `#`)
     # @param type [String] service type
     # @param endpoint [String] service endpoint URL
+    # @raise [ArgumentError] when the id starts with a `#`
     # @raise [FormatError] when the endpoint is not a valid URI
 
     def initialize(key, type, endpoint)
@@ -33,6 +34,10 @@ module DIDKit
         uri = URI(endpoint)
       rescue URI::Error
         raise FormatError, "Invalid service endpoint: #{endpoint.inspect}"
+      end
+
+      if key.start_with?('#')
+        raise ArgumentError, "Unexpected # in service id"
       end
 
       @key = key

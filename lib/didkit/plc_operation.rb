@@ -77,22 +77,34 @@ module DIDKit
       @type = type.to_sym
       return unless @type == :plc_operation
 
-      services = operation['services']
-      raise FormatError, "Missing services key: #{json}" if services.nil?
-      raise FormatError, "Invalid services data: #{services.inspect}" unless services.is_a?(Hash)
+      raise FormatError, "Missing services key: #{json}" if operation['services'].nil?
 
-      @services = services.map { |k, x|
-        type, endpoint = x.values_at('type', 'endpoint')
+      parse_services(operation['services'])
+      parse_also_known_as(operation['alsoKnownAs'])
+    end
+
+    private
+
+    def parse_services(service_data)
+      raise FormatError, "Invalid services data: #{service_data.inspect}" unless service_data.is_a?(Hash)
+
+      @services = []
+
+      service_data.each do |key, data|
+        type, endpoint = data.values_at('type', 'endpoint')
 
         raise FormatError, "Missing service type" unless type
         raise FormatError, "Invalid service type: #{type.inspect}" unless type.is_a?(String)
+
         raise FormatError, "Missing service endpoint" unless endpoint
         raise FormatError, "Invalid service endpoint: #{endpoint.inspect}" unless endpoint.is_a?(String)
 
-        ServiceRecord.new(k, type, endpoint)
-      }
-
-      parse_also_known_as(operation['alsoKnownAs'])
+        begin
+          @services << ServiceRecord.new(key, type, endpoint)
+        rescue FormatError => e
+          # ignore services with invalid URIs
+        end
+      end
     end
   end
 end
