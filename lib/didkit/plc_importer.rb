@@ -20,7 +20,7 @@ module DIDKit
 
     include Requests
 
-    attr_accessor :ignore_errors, :last_date, :error_handler
+    attr_accessor :last_date
 
     def initialize(since: nil)
       if since.to_s == 'beginning'
@@ -39,16 +39,6 @@ module DIDKit
 
     def plc_service
       PLC_SERVICE
-    end
-
-    def ignore_errors=(val)
-      @ignore_errors = val
-
-      if val
-        @error_handler = proc { |e, j| "(ignore error)" }
-      else
-        @error_handler = nil
-      end
     end
 
     def get_export(args = {})
@@ -70,13 +60,8 @@ module DIDKit
       query = @last_date ? { :after => @last_date.utc.iso8601(6) } : {}
       rows = get_export(query)
 
-      operations = rows.filter_map { |json|
-        begin
-          PLCOperation.new(json)
-        rescue FormatError => e
-          @error_handler ? @error_handler.call(e, json) : raise
-          nil
-        end
+      operations = rows.map { |json|
+        PLCOperation.new(json)
       }.reject { |op|
         # when you pass the most recent op's timestamp to ?after, it will be returned as the first op again,
         # so we need to use this CID list to filter it out (so pages will usually be 999 items long)
