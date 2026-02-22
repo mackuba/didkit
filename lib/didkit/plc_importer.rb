@@ -22,7 +22,7 @@ module DIDKit
 
     attr_accessor :last_date
 
-    def initialize(since: nil)
+    def initialize(since: nil, service: nil)
       if since.to_s == 'beginning'
         @last_date = nil
       elsif since.is_a?(String)
@@ -35,14 +35,11 @@ module DIDKit
       end
 
       @last_page_cids = []
-    end
-
-    def plc_service
-      PLC_SERVICE
+      @plc_service = service || PLC_SERVICE
     end
 
     def get_export(args = {})
-      url = URI("https://#{plc_service}/export")
+      url = URI("https://#{@plc_service}/export")
       url.query = URI.encode_www_form(args)
 
       data = get_data(url, content_type: 'application/jsonlines')
@@ -50,9 +47,9 @@ module DIDKit
     end
 
     def fetch_audit_log(did)
-      json = get_json("https://#{plc_service}/#{did}/log/audit", :content_type => :json)
+      json = get_json("https://#{@plc_service}/#{did}/log/audit", :content_type => :json)
       json.map { |j| PLCOperation.new(j) }
-    end      
+    end
 
     def fetch_page
       request_time = Time.now
