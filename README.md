@@ -1,5 +1,7 @@
 # DIDKit 🪪
 
+[![Gem Version](https://badge.fury.io/rb/didkit.svg?icon=si%3Arubygems&icon_color=%23ff6251)](https://rubygems.org/gems/didkit) [![YARD Docs](http://img.shields.io/badge/yard-docs-blue.svg)](https://rubydoc.info/gems/didkit)
+
 A small Ruby gem for handling Distributed Identifiers (DIDs) in Bluesky / AT Protocol.
 
 > [!NOTE]
