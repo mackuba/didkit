@@ -86,9 +86,9 @@ You can customize some things about the DID/handle lookups by using the `DIDKit:
 
 Currently available options include:
 
-- `:nameserver` - override the nameserver used for DNS lookups, e.g. to use Google's or CloudFlare's DNS
-- `:timeout` - change the connection/response timeout for HTTP requests (default: 15 s)
-- `:max_redirects` - change allowed maximum number of redirects (default: 5)
+- `:nameserver` – override the nameserver used for DNS lookups, e.g. to use Google's or CloudFlare's DNS
+- `:timeout` – change the connection/response timeout for HTTP requests (default: 15 s)
+- `:max_redirects` – change allowed maximum number of redirects (default: 5)
 
 Example:
 
@@ -105,6 +105,13 @@ resolver.resolve_did(did)
 resolver.get_verified_handle(did)
   # => 'nytimes.com'
 ```
+
+## Other resources
+
+- [YARD API documentation](https://rubydoc.info/gems/didkit) at rubydoc.info
+- [ruby.sdk.blue](https://ruby.sdk.blue)
+- [Example scripts](https://ruby.sdk.blue/examples/)
+
 
 ## Credits
 
