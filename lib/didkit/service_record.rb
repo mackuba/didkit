@@ -36,10 +36,6 @@ module DIDKit
         raise FormatError, "Invalid service endpoint: #{endpoint.inspect}"
       end
 
-      if key.start_with?('#')
-        raise ArgumentError, "Unexpected # in service id"
-      end
-
       @key = key
       @type = type
       @endpoint = endpoint

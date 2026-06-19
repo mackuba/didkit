@@ -246,6 +246,20 @@ describe DIDKit::PLCOperation do
       end
     end
 
+    context 'when a service entry type has an unexpected # prefix' do
+      let(:json) {
+        base_json.tap { |h|
+          h['operation']['services'] = {
+            "#atproto_pds" => { "type" => 'AtprotoPersonalDataServer', "endpoint" => "https://pds.dholms.xyz" }
+          }
+        }
+      }
+
+      it 'should not raise an error' do
+        expect { subject.new(json) }.to_not raise_error
+      end
+    end
+
     context 'when a service entry endpoint is missing' do
       let(:json) {
         base_json.tap { |h|
