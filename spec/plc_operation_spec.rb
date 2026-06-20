@@ -23,6 +23,41 @@ describe DIDKit::PLCOperation do
       end
     end
 
+    context 'with a legacy create operation' do
+      let(:json) { load_did_json('bnewbold_log.json').first }
+
+      it 'should parse the handle and service' do
+        op = subject.new(json)
+
+        op.type.should == :create
+        op.handles.should == ['bnewbold.bsky.social']
+        op.services.length.should == 1
+
+        pds = op.services.first
+        pds.should be_a(DIDKit::ServiceRecord)
+        pds.key.should == 'atproto_pds'
+        pds.type.should == 'AtprotoPersonalDataServer'
+        pds.endpoint.should == 'https://bsky.social'
+        op.pds_endpoint.should == 'https://bsky.social'
+      end
+
+      context 'when handle is not a string' do
+        before { json['operation']['handle'] = 123 }
+
+        it 'should raise a format error' do
+          expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+        end
+      end
+
+      context 'when service is not a string' do
+        before { json['operation']['service'] = { 'endpoint' => 'https://bsky.social' } }
+
+        it 'should raise a format error' do
+          expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+        end
+      end
+    end
+
     context 'when argument is not a hash' do
       let(:json) { [base_json] }
 
@@ -119,7 +154,7 @@ describe DIDKit::PLCOperation do
       end
     end
 
-    context 'when operation type is not plc_operation' do
+    context 'when operation type is unknown' do
       let(:json) { base_json.tap { |h| h['operation']['type'] = 'other' }}
 
       it 'should not raise an error' do

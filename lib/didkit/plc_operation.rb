@@ -75,12 +75,16 @@ module DIDKit
       raise FormatError, "Invalid operation type: #{type.inspect}" unless type.is_a?(String)
 
       @type = type.to_sym
-      return unless @type == :plc_operation
 
-      raise FormatError, "Missing services key: #{json}" if operation['services'].nil?
+      case @type
+      when :plc_operation
+        raise FormatError, "Missing services key: #{json}" if operation['services'].nil?
 
-      parse_services(operation['services'])
-      parse_also_known_as(operation['alsoKnownAs'])
+        parse_services(operation['services'])
+        parse_also_known_as(operation['alsoKnownAs'])
+      when :create
+        parse_legacy_ops(operation)
+      end
     end
 
     private
@@ -104,6 +108,18 @@ module DIDKit
         rescue FormatError => e
           # ignore services with invalid URIs
         end
+      end
+    end
+
+    def parse_legacy_ops(operation)
+      if handle = operation['handle']
+        raise FormatError, "Handle should be a string" unless handle.is_a?(String)
+        @handles = [handle]
+      end
+
+      if service = operation['service']
+        raise FormatError, "Service should be a string" unless service.is_a?(String)
+        @services = [ServiceRecord.new('atproto_pds', 'AtprotoPersonalDataServer', service)]
       end
     end
   end
