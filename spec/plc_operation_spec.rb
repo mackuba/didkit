@@ -487,4 +487,24 @@ describe DIDKit::PLCOperation do
       end
     end
   end
+
+  describe '#nullified?' do
+    context "if operation hasn't been nullified" do
+      let(:json) { base_json }
+
+      it 'should return false' do
+        op = subject.new(json)
+        op.should_not be_nullified
+      end
+    end
+
+    context "if operation has been nullified" do
+      let(:json) { base_json.merge('nullified' => true) }
+
+      it 'should return true' do
+        op = subject.new(json)
+        op.should be_nullified
+      end
+    end
+  end
 end

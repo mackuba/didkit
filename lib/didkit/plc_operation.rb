@@ -87,6 +87,12 @@ module DIDKit
       end
     end
 
+    # @return [Boolean] if the operation has been nullified through a rotation operation
+    def nullified?
+      @json['nullified'] == true
+    end
+
+
     private
 
     def parse_services(service_data)
