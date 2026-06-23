@@ -49,11 +49,46 @@ describe DIDKit::PLCOperation do
         end
       end
 
+      context 'when handle field is missing' do
+        before do
+          json['operation'].delete('handle')
+        end
+
+        it 'should return empty handle array' do
+          op = subject.new(json)
+          op.handles.should == []
+        end
+      end
+
       context 'when service is not a string' do
         before { json['operation']['service'] = { 'endpoint' => 'https://bsky.social' } }
 
         it 'should raise a format error' do
           expect { subject.new(json) }.to raise_error(DIDKit::FormatError)
+        end
+      end
+
+      context 'when service is not a valid URI' do
+        before { json['operation']['service'] = 'https://invalid uri' }
+
+        it 'should ignore the invalid service' do
+          op = subject.new(json)
+
+          op.services.should == []
+          op.pds_endpoint.should be_nil
+        end
+      end
+
+      context 'when service field is missing' do
+        before do
+          json['operation'].delete('service')
+        end
+
+        it 'should return empty service array' do
+          op = subject.new(json)
+
+          op.services.should == []
+          op.pds_endpoint.should be_nil
         end
       end
     end

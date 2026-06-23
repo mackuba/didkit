@@ -118,14 +118,22 @@ module DIDKit
     end
 
     def parse_legacy_ops(operation)
+      @handles = []
+      @services = []
+
       if handle = operation['handle']
         raise FormatError, "Handle should be a string" unless handle.is_a?(String)
-        @handles = [handle]
+        @handles << handle
       end
 
       if service = operation['service']
         raise FormatError, "Service should be a string" unless service.is_a?(String)
-        @services = [ServiceRecord.new('atproto_pds', 'AtprotoPersonalDataServer', service)]
+
+        begin
+          @services << ServiceRecord.new('atproto_pds', 'AtprotoPersonalDataServer', service)
+        rescue FormatError
+          # ignore services with invalid URIs
+        end
       end
     end
   end
