@@ -148,17 +148,19 @@ module DIDKit
         json = JSON.parse(response.body)
 
         if json['active'] == true
-          :active
+          return :active
         elsif json['active'] == false && json['status'].is_a?(String) && json['status'].length <= 100
-          json['status'].to_sym
-        else
-          raise APIError.new(response)
+          return json['status'].to_sym
         end
-      elsif status == 400 && is_json && JSON.parse(response.body)['error'] == 'RepoNotFound'
-        nil
-      else
-        raise APIError.new(response)
+      elsif (status == 400 || status == 404) && is_json
+        json = JSON.parse(response.body)
+
+        if json['error'] == 'RepoNotFound'
+          return nil
+        end
       end
+
+      raise APIError.new(response)
     end
 
     # Checks if the account is seen as active on its own PDS, using the `getRepoStatus` endpoint.

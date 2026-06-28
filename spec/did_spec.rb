@@ -163,6 +163,18 @@ describe DIDKit::DID do
       end
     end
 
+    context 'when repo is not found and we get a 404 response' do
+      let(:http_response) {
+        { status: 404, body: { error: 'RepoNotFound' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+      }
+
+      it 'should return nil status and report the account as missing' do
+        did.account_status.should be_nil
+        did.account_active?.should == false
+        did.account_exists?.should == false
+      end
+    end
+
     context 'when the document has no pds endpoint' do
       before do
         did.stubs(:document).returns(stub(:pds_endpoint => nil))
@@ -199,31 +211,35 @@ describe DIDKit::DID do
       end
     end
 
-    context 'when an error different than RepoNotFound is returned' do
-      let(:http_response) {
-        { status: 400, body: { error: 'UserIsJerry' }.to_json, headers: { 'Content-Type' => 'application/json' }}
-      }
+    [400, 404].each do |status|
+      context "when an error different than RepoNotFound is returned with status #{status}" do
+        let(:http_response) {
+          { status: status, body: { error: 'UserIsJerry' }.to_json, headers: { 'Content-Type' => 'application/json' }}
+        }
 
-      it 'should raise APIError' do
-        expect { did.account_status }.to raise_error(DIDKit::APIError)
-        expect { did.account_active? }.to raise_error(DIDKit::APIError)
-        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+        it 'should raise APIError' do
+          expect { did.account_status }.to raise_error(DIDKit::APIError)
+          expect { did.account_active? }.to raise_error(DIDKit::APIError)
+          expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+        end
       end
     end
 
-    context 'when the response is not application/json' do
-      let(:http_response) {
-        { status: 400, body: 'error', headers: { 'Content-Type' => 'text/html' }}
-      }
+    [200, 400, 404].each do |status|
+      context "when the response has status #{status} and is not application/json" do
+        let(:http_response) {
+          { status: status, body: 'error', headers: { 'Content-Type' => 'text/html' }}
+        }
 
-      it 'should raise APIError' do
-        expect { did.account_status }.to raise_error(DIDKit::APIError)
-        expect { did.account_active? }.to raise_error(DIDKit::APIError)
-        expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+        it 'should raise APIError' do
+          expect { did.account_status }.to raise_error(DIDKit::APIError)
+          expect { did.account_active? }.to raise_error(DIDKit::APIError)
+          expect { did.account_exists? }.to raise_error(DIDKit::APIError)
+        end
       end
     end
 
-    context 'when the response is not 200 or 400' do
+    context 'when the response is not 200, 400, or 404' do
       let(:http_response) {
         { status: 500, body: { error: 'RepoNotFound' }.to_json, headers: { 'Content-Type' => 'application/json' }}
       }
