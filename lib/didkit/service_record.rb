@@ -26,7 +26,6 @@ module DIDKit
     # @param key [String] service identifier (without `#`)
     # @param type [String] service type
     # @param endpoint [String] service endpoint URL
-    # @raise [ArgumentError] when the id starts with a `#`
     # @raise [FormatError] when the endpoint is not a valid URI
 
     def initialize(key, type, endpoint)
