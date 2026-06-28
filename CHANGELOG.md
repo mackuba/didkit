@@ -1,3 +1,15 @@
+## Unreleased
+
+- added `#also_known_as` separate from `#handles` in `Document` and `PLCOperation`, which stores the original array of strings as listed in the JSON, not filtered and not stripped of the `at://` prefix
+- added `PLCOperation#nullified?`
+- added support for parsing `handle` and `service` fields from legacy (2022-23 era) `:create` PLC ops in `PLCOperation`
+- `PLCImporter` can be configured with a custom hostname of a PLC mirror to use instead of [plc.directory](https://plc.directory)
+- in `DID#account_status` / `account_active?` / `account_exists?`, accept `getRepoStatus` endpoint returning responses with status 404 instead of 400 (since some PDS implementations do it this way)
+- tweaked parsing of services in `Document` and `PLCOperation`:
+  1. `Document` raises format errors if the fields are missing or not of expected type (since this shouldn't happen)
+  2. `Document` & `PLCOperation` silently ignore the service if its endpoint is not a valid URI (since this does happen)
+  3. Removed `ignore_errors` / `error_handler` from `PLCImporter`, since because of 2) no expected errors are emitted outside `PLCOperation`
+
 ## [0.3.3] - 2026-02-22
 
 - fixed old `FormatError` classes mentioned in `PLCImporter`
