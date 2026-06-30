@@ -452,6 +452,47 @@ describe DIDKit::PLCOperation do
         op.labeller_endpoint.should == 'https://labeler.example.com'
         op.labeller_host.should == 'labeler.example.com'
       end
+
+      context 'when endpoint URLs include custom ports' do
+        let(:json) {
+          base_json.tap { |h|
+            h['operation']['services'] = {
+              "atproto_pds" => {
+                "type" => "AtprotoPersonalDataServer",
+                "endpoint" => "https://pds.dholms.xyz:3000"
+              },
+              "atproto_labeler" => {
+                "type" => "AtprotoLabeler",
+                "endpoint" => "https://labeler.example.com:4567"
+              },
+              "custom_service" => {
+                "type" => "OtherService",
+                "endpoint" => "https://custom.example.com:6789"
+              }
+            }
+          }
+        }
+
+        it 'should keep ports in endpoint URLs' do
+          op = subject.new(json)
+          pds, labeller, custom = op.services
+
+          pds.endpoint.should == 'https://pds.dholms.xyz:3000'
+          op.pds_endpoint.should == 'https://pds.dholms.xyz:3000'
+
+          labeller.endpoint.should == 'https://labeler.example.com:4567'
+          op.labeller_endpoint.should == 'https://labeler.example.com:4567'
+
+          custom.endpoint.should == 'https://custom.example.com:6789'
+        end
+
+        it 'should exclude ports in host properties' do
+          op = subject.new(json)
+
+          op.pds_host.should == 'pds.dholms.xyz'
+          op.labeller_host.should == 'labeler.example.com'
+        end
+      end
     end
 
     context 'when services are valid but the specific ones are missing' do

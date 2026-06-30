@@ -273,6 +273,36 @@ describe DIDKit::Document do
       doc.labeller_host.should == 'labels.dholms.xyz'
     end
 
+    context 'when endpoint URLs include custom ports' do
+      let(:service_json) {
+        base_json.merge('service' => [
+          { 'id' => '#atproto_pds', 'type' => 'AtprotoPersonalDataServer', 'serviceEndpoint' => 'https://pds.dholms.xyz:3000' },
+          { 'id' => '#atproto_labeler', 'type' => 'AtprotoLabeler', 'serviceEndpoint' => 'https://labels.dholms.xyz:4567' },
+          { 'id' => '#lycan', 'type' => 'LycanService', 'serviceEndpoint' => 'https://lycan.feeds.blue:6789' }
+        ])
+      }
+
+      it 'should keep ports in endpoint URLs' do
+        doc = subject.new(did, service_json)
+        pds, labeller, custom = doc.services
+
+        pds.endpoint.should == 'https://pds.dholms.xyz:3000'
+        doc.pds_endpoint.should == 'https://pds.dholms.xyz:3000'
+
+        labeller.endpoint.should == 'https://labels.dholms.xyz:4567'
+        doc.labeller_endpoint.should == 'https://labels.dholms.xyz:4567'
+
+        custom.endpoint.should == 'https://lycan.feeds.blue:6789'
+      end
+
+      it 'should exclude ports from host properties' do
+        doc = subject.new(did, service_json)
+
+        doc.pds_host.should == 'pds.dholms.xyz'
+        doc.labeller_host.should == 'labels.dholms.xyz'
+      end
+    end
+
     describe 'if there is no matching service' do
       let(:service_json) {
         base_json.merge('service' => [

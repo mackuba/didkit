@@ -48,6 +48,8 @@ module DIDKit
 
     # Returns the hostname of the PDS service, if present.
     #
+    # If the endpoint URL includes a port number, it is excluded.
+    #
     # @api public
     # @return [String, nil] hostname of the PDS endpoint URL
 
@@ -56,6 +58,8 @@ module DIDKit
     end
 
     # Returns the hostname of the labeler service, if present.
+    #
+    # If the endpoint URL includes a port number, it is excluded.
     #
     # @api public
     # @return [String, nil] hostname of the labeler endpoint URL
