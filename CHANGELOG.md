@@ -1,9 +1,10 @@
-## Unreleased
+## [0.4.0] - 2026-07-02
 
 - added `#also_known_as` separate from `#handles` in `Document` and `PLCOperation`, which stores the original array of strings as listed in the JSON, not filtered and not stripped of the `at://` prefix
 - added `PLCOperation#nullified?`
 - added support for parsing `handle` and `service` fields from legacy (2022-23 era) `:create` PLC ops in `PLCOperation`
 - `PLCImporter` can be configured with a custom hostname of a PLC mirror to use instead of [plc.directory](https://plc.directory)
+- `PLCImporter` will no longer update cursor to local request time if an empty page is received, but will instead leave the cursor as is – local time might have some offset vs. server time if the clock isn't set right, and this could lead to skipped operations
 - in `DID#account_status` / `account_active?` / `account_exists?`, accept `getRepoStatus` endpoint returning responses with status 404 instead of 400 (since some PDS implementations do it this way)
 - tweaked parsing of services in `Document` and `PLCOperation`:
   1. `Document` raises format errors if the fields are missing or not of expected type (since this shouldn't happen)
