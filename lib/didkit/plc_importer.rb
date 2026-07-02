@@ -52,8 +52,6 @@ module DIDKit
     end
 
     def fetch_page
-      request_time = Time.now
-
       query = @last_date ? { :after => @last_date.utc.iso8601(6) } : {}
       rows = get_export(query)
 
@@ -66,8 +64,11 @@ module DIDKit
         @last_page_cids.include?(op.cid)
       }
 
-      @last_date = operations.last&.created_at || request_time
-      @last_page_cids = Set.new(operations.map(&:cid))
+      unless operations.empty?
+        @last_date = operations.last.created_at
+        @last_page_cids = Set.new(operations.map(&:cid))
+      end
+
       @eof = (rows.length < MAX_PAGE)
 
       operations
