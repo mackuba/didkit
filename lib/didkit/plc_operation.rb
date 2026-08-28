@@ -93,6 +93,12 @@ module DIDKit
       @json['nullified'] == true
     end
 
+    # Returns the account's public signing key listed in this PLC operation under `verificationMethods`.
+    #
+    # @return [PublicKey, nil] decoded signing key wrapped in {PublicKey}, or nil for `tombstone` operations
+    # @raise [FormatError] when a required field is missing or has a wrong type
+    # @raise [KeyError] when the key is invalid, incorrectly encoded, or has unsupported type
+
     def signing_key
       case @type
       when :plc_operation

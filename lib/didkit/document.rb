@@ -14,6 +14,9 @@ module DIDKit
   #
   # Use {DID#document} or {Resolver#resolve_did} to fetch a DID document and return this object.
   #
+  # Related specifications:
+  # - [ATProto DID](https://atproto.com/specs/did)
+  #
 
   class Document
     include AtHandles
@@ -57,6 +60,13 @@ module DIDKit
     def get_verified_handle
       Resolver.new.get_verified_handle(self)
     end
+
+    # Returns the account's public signing key parsed from the DID document's `verificationMethod`.
+    #
+    # @return [PublicKey, nil] decoded signing key wrapped in {PublicKey}, or nil if no matching verification method is found
+    # @raise [FormatError] when `verificationMethod` or one of its entries has an invalid type
+    # @raise [ArgumentError] when selected key data is not a string
+    # @raise [KeyError] when the key is invalid, incorrectly encoded, or has unsupported type
 
     def signing_key
       keys = @json['verificationMethod']
