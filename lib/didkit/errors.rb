@@ -38,4 +38,10 @@ module DIDKit
   #
   class FormatError < StandardError
   end
+
+  #
+  # Raised when an account's public key is invalid or unsupported.
+  #
+  class KeyError < StandardError
+  end
 end

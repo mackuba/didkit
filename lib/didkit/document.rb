@@ -2,6 +2,7 @@
 
 require_relative 'at_handles'
 require_relative 'errors'
+require_relative 'public_key'
 require_relative 'resolver'
 require_relative 'service_record'
 require_relative 'services'
@@ -55,6 +56,24 @@ module DIDKit
 
     def get_verified_handle
       Resolver.new.get_verified_handle(self)
+    end
+
+    def signing_key
+      keys = @json['verificationMethod']
+      return nil if keys.nil?
+
+      raise FormatError, "verificationMethod is not an array: #{keys.inspect}" unless keys.is_a?(Array)
+
+      keys.each do |data|
+        raise FormatError, "verificationMethod item is invalid: #{data.inspect}" unless data.is_a?(Hash)
+
+        next unless data['id'] == "#{@did}#atproto" || data['id'] == "#atproto"
+        next unless data['controller'] == @did.to_s && data['type'] == 'Multikey' && !data['publicKeyMultibase'].nil?
+
+        return PublicKey.new(data['publicKeyMultibase'])
+      end
+
+      nil
     end
 
 

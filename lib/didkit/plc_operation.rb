@@ -4,6 +4,7 @@ require 'time'
 
 require_relative 'at_handles'
 require_relative 'errors'
+require_relative 'public_key'
 require_relative 'service_record'
 require_relative 'services'
 
@@ -90,6 +91,31 @@ module DIDKit
     # @return [Boolean] if the operation has been nullified through a rotation operation
     def nullified?
       @json['nullified'] == true
+    end
+
+    def signing_key
+      case @type
+      when :plc_operation
+        methods = @json['operation']['verificationMethods']
+        raise FormatError, "Missing verificationMethods key: #{@json}" if methods.nil?
+        raise FormatError, "Invalid verificationMethods key: #{methods.inspect}" unless methods.is_a?(Hash)
+
+        key = methods['atproto']
+        raise FormatError, "Missing verificationMethods.atproto key: #{@json}" if key.nil?
+        raise FormatError, "Invalid verificationMethods.atproto key: #{key.inspect}" unless key.is_a?(String)
+        raise KeyError, "Key should start with did:key: #{key.inspect}" unless key.start_with?('did:key:')
+
+        PublicKey.new(key[8..-1])
+      when :create
+        key = @json['operation']['signingKey']
+        raise FormatError, "Missing signingKey field: #{@json}" if key.nil?
+        raise FormatError, "Invalid signingKey field: #{key.inspect}" unless key.is_a?(String)
+        raise KeyError, "Key should start with did:key: #{key.inspect}" unless key.start_with?('did:key:')
+
+        PublicKey.new(key[8..-1])
+      else
+        nil
+      end
     end
 
 
