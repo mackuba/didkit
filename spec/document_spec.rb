@@ -206,6 +206,94 @@ describe DIDKit::Document do
     end
   end
 
+  describe '#signing_key' do
+    let(:verification_method) { base_json['verificationMethod'].first }
+    let(:other_method) { verification_method.merge('publicKeyMultibase' => "zDnaeeroaSbjDQ9hs1vkwgihZfFpcXtL7b7hdGBD1zYoJMfqJ") }
+
+    it 'should decode a public key from verificationMethod with id including a DID + #atproto' do
+      key = subject.new(did, base_json).signing_key
+
+      key.should be_a(DIDKit::PublicKey)
+      key.type.should == :k256
+      key.multibase.should == verification_method['publicKeyMultibase']
+    end
+
+    it 'should accept a relative #atproto id without DID' do
+      json = base_json.merge('verificationMethod' => [verification_method.merge('id' => '#atproto')])
+
+      key = subject.new(did, json).signing_key
+
+      key.should be_a(DIDKit::PublicKey)
+      key.type.should == :k256
+      key.multibase.should == verification_method['publicKeyMultibase']
+    end
+
+    it 'should return nil if verificationMethod is missing' do
+      json = base_json.dup.tap { |data| data.delete('verificationMethod') }
+
+      subject.new(did, json).signing_key.should be_nil
+    end
+
+    it 'should return nil if verificationMethod is empty' do
+      json = base_json.merge('verificationMethod' => [])
+
+      subject.new(did, json).signing_key.should be_nil
+    end
+
+    it 'should raise a format error if verificationMethod is not an array' do
+      json = base_json.merge('verificationMethod' => verification_method)
+
+      expect { subject.new(did, json).signing_key }.to raise_error(DIDKit::FormatError)
+    end
+
+    it 'should raise a format error if an entry is not a hash' do
+      json = base_json.merge('verificationMethod' => ['invalid'])
+
+      expect { subject.new(did, json).signing_key }.to raise_error(DIDKit::FormatError)
+    end
+
+    it 'should skip entries whose required fields do not match' do
+      methods = [
+        other_method.merge('id' => 'did:plc:someoneelse#atproto'),
+        other_method.merge('controller' => 'did:plc:someoneelse'),
+        other_method.merge('id' => '#atproto', 'controller' => 'did:plc:someoneelse'),
+        other_method.merge('id' => 'did:plc:someoneelse#atproto', 'controller' => 'did:plc:someoneelse'),
+        other_method.merge('type' => 'OtherKeyType'),
+        other_method.merge('publicKeyMultibase' => nil),
+        verification_method
+      ]
+
+      json = base_json.merge('verificationMethod' => methods)
+
+      key = subject.new(did, json).signing_key
+      key.should_not be_nil
+      key.multibase.should == verification_method['publicKeyMultibase']
+    end
+
+    it 'should return nil if no entry has all required fields' do
+      methods = [
+        other_method.merge('id' => 'did:plc:someoneelse#atproto'),
+        other_method.merge('controller' => 'did:plc:someoneelse'),
+        other_method.merge('id' => '#atproto', 'controller' => 'did:plc:someoneelse'),
+        other_method.merge('id' => 'did:plc:someoneelse#atproto', 'controller' => 'did:plc:someoneelse'),
+        verification_method.merge('type' => 'OtherKeyType'),
+        verification_method.merge('publicKeyMultibase' => nil)
+      ]
+
+      json = base_json.merge('verificationMethod' => methods)
+
+      key = subject.new(did, json).signing_key
+      key.should be_nil
+    end
+
+    it 'should not fall through to next key if one key is invalid' do
+      invalid = verification_method.merge('publicKeyMultibase' => 'z0')
+      json = base_json.merge('verificationMethod' => [invalid, verification_method])
+
+      expect { subject.new(did, json).signing_key }.to raise_error(DIDKit::KeyError)
+    end
+  end
+
   describe 'service helpers' do
     let(:service_json) {
       base_json.merge('service' => [

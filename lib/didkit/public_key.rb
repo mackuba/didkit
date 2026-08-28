@@ -101,6 +101,7 @@ module DIDKit
 
     def validate_ec_point
       if !ec_point.on_curve?
+        # shouldn't generally happen because OpenSSL rejects such keys in Point initializer
         raise KeyError, "Invalid key data: #{@multibase.inspect}"
       end
     rescue OpenSSL::OpenSSLError

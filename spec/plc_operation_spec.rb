@@ -564,6 +564,105 @@ describe DIDKit::PLCOperation do
     end
   end
 
+  describe '#signing_key' do
+    context 'for a modern plc operation' do
+      let(:json) { load_did_json('bnewbold_log.json').last }
+
+      it 'should decode a public key from verificationMethods' do
+        key = subject.new(json).signing_key
+
+        key.should be_a(DIDKit::PublicKey)
+        key.type.should == :k256
+        key.multibase.should == "zQ3shkke2XfFX6A1aRXkCqXKKF9m9N4GH9NCiRuDNFkpsqFmd"
+      end
+
+      it 'should raise a format error if verificationMethods is missing' do
+        json['operation'].delete('verificationMethods')
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::FormatError)
+      end
+
+      it 'should raise a format error if verificationMethods is not a hash' do
+        json['operation']['verificationMethods'] = []
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::FormatError)
+      end
+
+      it 'should raise a format error if the atproto method is missing' do
+        json['operation']['verificationMethods'].delete('atproto')
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::FormatError)
+      end
+
+      it 'should raise a format error if the atproto method is not a string' do
+        json['operation']['verificationMethods']['atproto'] = 123
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::FormatError)
+      end
+
+      it "should raise a key error if the atproto key string doesn't start with did:key:" do
+        json['operation']['verificationMethods']['atproto'] = 'zQ3shkke2XfFX6A1aRXkCqXKKF9m9N4GH9NCiRuDNFkpsqFmd'
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError, /should start with did:key/)
+      end
+
+      it 'should raise a key error if the contained multikey data is invalid' do
+        json['operation']['verificationMethods']['atproto'] = 'did:key:z0'
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError)
+      end
+    end
+
+    context 'for a legacy create operation' do
+      let(:json) { load_did_json('bnewbold_log.json').first }
+
+      it 'should decode a public key from signingKey field' do
+        key = subject.new(json).signing_key
+
+        key.should be_a(DIDKit::PublicKey)
+        key.type.should == :k256
+        key.multibase.should == "zQ3shP5TBe1sQfSttXty15FAEHV1DZgcxRZNxvEWnPfLFwLxJ"
+      end
+
+      it 'should raise a format error if signingKey is missing' do
+        json['operation'].delete('signingKey')
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::FormatError)
+      end
+
+      it 'should raise a format error if signingKey is not a string' do
+        json['operation']['signingKey'] = 123
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::FormatError)
+      end
+
+      it "should raise a key error if signingKey doesn't start with did:key:" do
+        json['operation']['signingKey'] = 'zQ3shP5TBe1sQfSttXty15FAEHV1DZgcxRZNxvEWnPfLFwLxJ'
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError, /should start with did:key/)
+      end
+
+      it 'should raise a key error if the contained multikey data is invalid' do
+        json['operation']['signingKey'] = 'did:key:z0'
+
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError)
+      end
+    end
+
+    context 'with another operation type' do
+      let(:json) {
+        load_did_json('bnewbold_log.json').last.tap do |data|
+          data['operation']['type'] = 'tombstone'
+        end
+      }
+
+      it 'should return nil' do
+        op = subject.new(json)
+        op.signing_key.should be_nil
+      end
+    end
+  end
+
   describe '#nullified?' do
     context "if operation hasn't been nullified" do
       let(:json) { base_json }
