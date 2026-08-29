@@ -222,6 +222,19 @@ describe DIDKit::PLCOperation do
         op = subject.new(json)
         op.handles.should be_nil
       end
+
+      it 'should return nil from get_service' do
+        op = subject.new(json)
+        op.get_service('custom', 'CustomService').should be_nil
+      end
+
+      it 'should return nil from endpoint helpers' do
+        op = subject.new(json)
+        op.pds_endpoint.should be_nil
+        op.pds_host.should be_nil
+        op.labeller_endpoint.should be_nil
+        op.labeller_host.should be_nil
+      end
     end
 
     context 'when alsoKnownAs is not an array' do

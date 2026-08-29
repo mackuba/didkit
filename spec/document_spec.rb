@@ -226,6 +226,13 @@ describe DIDKit::Document do
       doc = subject.new(did, json)
       doc.get_verified_handle.should be_nil
     end
+
+    it "should return nil if there are no syntactically valid handles" do
+      json = base_json.merge('alsoKnownAs' => ["mozilla.org"])
+
+      doc = subject.new(did, json)
+      doc.get_verified_handle.should be_nil
+    end
   end
 
   describe '#signing_key' do

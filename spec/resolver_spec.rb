@@ -202,5 +202,13 @@ describe DIDKit::Resolver do
 
       subject.get_verified_handle(did).should be_nil
     end
+
+    context 'if there are no syntactically valid handles' do
+      let(:json) { base_json.merge('alsoKnownAs' => ["mozilla.org"])}
+
+      it "should return nil" do
+        subject.get_verified_handle(did).should be_nil
+      end
+    end
   end
 end
