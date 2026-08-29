@@ -1,3 +1,10 @@
+## Unreleased
+
+- added support for decoding public (signing) keys – `Document#signing_key`, `PLCOperation#signing_key` and `DIDKit::PublicKey` class
+- resolver behavior change: the [ATProto DID spec](https://atproto.com/specs/did#did-documents) now says that if there are multiple handles in a document, only the first one should be checked bi-directionally and the rest should be skipped; the `get_verified_handle` algorithm has been updated to match this behavior:
+
+    > The first syntactically valid handle found in the ordered list is treated as the claimed handle, even if it fails to resolve bi-directionally. Any other handle URIs should be ignored.
+
 ## [0.4.0] - 2026-07-02
 
 - added `#also_known_as` separate from `#handles` in `Document` and `PLCOperation`, which stores the original array of strings as listed in the JSON, not filtered and not stripped of the `at://` prefix
