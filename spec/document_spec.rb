@@ -206,6 +206,28 @@ describe DIDKit::Document do
     end
   end
 
+  describe '#get_verified_handle' do
+    let(:json) { base_json.merge('alsoKnownAs' => [
+      "mozilla.org",
+      "at://dholms.xyz",
+      "at://dholms.bsky.team"
+    ])}
+
+    it 'should return first syntactically correct handle if it validates' do
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns(did.to_s)
+
+      doc = subject.new(did, json)
+      doc.get_verified_handle.should == 'dholms.xyz'
+    end
+
+    it "should return nil if the first handle doesn't validate" do
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns('')
+
+      doc = subject.new(did, json)
+      doc.get_verified_handle.should be_nil
+    end
+  end
+
   describe '#signing_key' do
     let(:verification_method) { base_json['verificationMethod'].first }
     let(:other_method) { verification_method.merge('publicKeyMultibase' => "zDnaeeroaSbjDQ9hs1vkwgihZfFpcXtL7b7hdGBD1zYoJMfqJ") }

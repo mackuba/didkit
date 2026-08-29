@@ -13,7 +13,11 @@ module DIDKit
     # Returns a list of ATProto handles assigned to this DID in its DID document.
     #
     # Note: the handles aren't guaranteed to be verified (validated in the other direction).
-    # Use {DID#get_verified_handle} to find a handle that is correctly verified.
+    # Use {DID#get_verified_handle} to get a handle that is correctly verified.
+    #
+    # According to the current [ATProto DID spec](https://atproto.com/specs/did#did-documents),
+    # if a DID has more than one handle assigned, only the first one on the list should be
+    # considered and the rest should be ignored.
     #
     # @api public
     # @return [Array<String>]

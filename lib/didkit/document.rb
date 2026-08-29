@@ -49,11 +49,11 @@ module DIDKit
       parse_also_known_as(json['alsoKnownAs'] || [])
     end
 
-    # Returns the first verified handle assigned to the DID.
+    # Returns the current primary handle assigned to the DID, if it verifies correctly.
     #
-    # Looks up the domain handles assigned to this DID in the DID document, checks if they are
-    # verified (i.e. assigned correctly to this DID using DNS TXT or .well-known) and returns
-    # the first handle that validates correctly, or nil if none matches.
+    # Looks up the first syntactically valid handle in the DID document and checks if it is assigned
+    # correctly to this DID using DNS TXT or .well-known. Any later handles are ignored, even if the
+    # first handle fails verification. Returns nil if the primary handle cannot be verified.
     #
     # @return [String, nil] verified handle domain, if found
 

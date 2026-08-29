@@ -119,11 +119,11 @@ module DIDKit
       did.type == :plc ? resolve_did_plc(did) : resolve_did_web(did)
     end
 
-    # Returns the first verified handle assigned to the given DID.
+    # Returns the current primary handle assigned to the given DID, if it verifies correctly.
     #
-    # Looks up the domain handles assigned to the DID in the DID document, checks if they are
-    # verified (i.e. assigned correctly to this DID using DNS TXT or .well-known) and returns
-    # the first handle that validates correctly, or nil if none matches.
+    # Looks up the first syntactically valid handle in the DID document and checks if it is assigned
+    # correctly to this DID using DNS TXT or .well-known. Any later handles are ignored, even if the
+    # first handle fails verification. Returns nil if the primary handle cannot be verified.
     #
     # @param subject [String, DID, Document] a DID or its DID document
     # @return [String, nil] verified handle domain, if found
@@ -134,14 +134,20 @@ module DIDKit
       first_verified_handle(document.did, document.handles)
     end
 
-    # Returns the first handle from the list that resolves back to the given DID.
+    # Returns the first handle from the list, if it resolves back to the given DID.
+    #
+    # Only the first handle is checked. Any later handles are ignored, even when the first one
+    # does not resolve back to the expected DID.
     #
     # @param did [DID, String] DID to verify the handles against
     # @param handles [Array<String>] handles to check
     # @return [String, nil] a verified handle, if found
 
     def first_verified_handle(did, handles)
-      handles.detect { |h| resolve_handle(h) == did.to_s }
+      handle = handles.first
+      return nil unless handle
+
+      resolve_handle(handle) == did.to_s ? handle : nil
     end
 
 

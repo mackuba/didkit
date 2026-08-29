@@ -15,7 +15,7 @@ module DIDKit
   # Related documentation:
   # - [ATProto: Cryptography](https://atproto.com/specs/cryptography)
   # - [02, 03 or 04? So What Are Compressed and Uncompressed Public Keys?](https://medium.com/asecuritysite-when-bob-met-alice/02-03-or-04-so-what-are-compressed-and-uncompressed-public-keys-6abcb57efeb6)
-  # - [multicodec](https://github.com/multiformats/multicodec)
+  # - [multicodec](https://github.com/multiformats/multicodec) & [multibase](https://github.com/multiformats/multibase)
   #
 
   class PublicKey

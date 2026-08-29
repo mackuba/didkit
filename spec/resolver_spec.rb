@@ -176,4 +176,31 @@ describe DIDKit::Resolver do
       end
     end
   end
+
+  describe '#get_verified_handle' do
+    let(:did) { DID.new('did:plc:yk4dd2qkboz2yv6tpubpc6co') }
+    let(:base_json) { load_did_json('dholms.json') }
+    let(:json) { base_json.merge('alsoKnownAs' => [
+      "mozilla.org",
+      "at://dholms.xyz",
+      "at://dholms.bsky.team"
+    ])}
+
+    before do
+      stub_request(:get, "https://plc.directory/#{did}")
+        .to_return(body: JSON.generate(json), headers: { 'Content-Type': 'application/did+ld+json; charset=utf-8' })
+    end
+
+    it 'should return first syntactically correct handle if it resolves back to the DID' do
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns(did.to_s)
+
+      subject.get_verified_handle(did).should == 'dholms.xyz'
+    end
+
+    it "should return nil if the first handle doesn't validate" do
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns('')
+
+      subject.get_verified_handle(did).should be_nil
+    end
+  end
 end
