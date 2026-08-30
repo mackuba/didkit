@@ -131,23 +131,13 @@ module DIDKit
     def get_verified_handle(subject)
       document = subject.is_a?(Document) ? subject : resolve_did(subject)
 
-      first_verified_handle(document.did, document.handles)
-    end
+      primary_handle = document.handles.first
 
-    # Returns the first handle from the list, if it resolves back to the given DID.
-    #
-    # Only the first handle is checked. Any later handles are ignored, even when the first one
-    # does not resolve back to the expected DID.
-    #
-    # @param did [DID, String] DID to verify the handles against
-    # @param handles [Array<String>] handles to check
-    # @return [String, nil] a verified handle, if found
-
-    def first_verified_handle(did, handles)
-      handle = handles.first
-      return nil unless handle
-
-      resolve_handle(handle) == did.to_s ? handle : nil
+      if primary_handle && resolve_handle(primary_handle) == document.did.to_s
+        primary_handle
+      else
+        nil
+      end
     end
 
 
