@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
     "bug_tracker_uri"   => "https://tangled.org/mackuba.eu/didkit/issues",
     "changelog_uri"     => "https://tangled.org/mackuba.eu/didkit/blob/master/CHANGELOG.md",
     "source_code_uri"   => "https://tangled.org/mackuba.eu/didkit",
+    "rubygems_mfa_required" => "true"
   }
 
   spec.files = Dir.chdir(__dir__) do
