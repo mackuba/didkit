@@ -22,7 +22,6 @@ module DIDKit
       timeout = options[:timeout] || 15
 
       request_options = {
-        use_ssl: true,
         open_timeout: timeout,
         read_timeout: timeout
       }
@@ -34,7 +33,9 @@ module DIDKit
       loop do
         visited_urls << url
 
-        response = Net::HTTP.start(url.host, url.port, request_options) do |http|
+        request_options.update(use_ssl: (url.scheme == 'https'))
+
+        response = Net::HTTP.start(url.hostname, url.port, request_options) do |http|
           request = Net::HTTP::Get.new(url)
           http.request(request)
         end

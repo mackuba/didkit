@@ -12,6 +12,11 @@ describe DIDKit::Resolver do
       'localhost:3000',
       '127.0.0.1:3000',
       '[::1]:3000',
+      'http://localhost:3000',
+      'http://LOCALHOST:3000/',
+      'http://127.0.0.1:3000/',
+      'http://127.42.0.2:3000',
+      'http://[::1]:3000/',
       'https://[2001:db8::1]:8443'
     ].each do |url|
       it "should resolve PLC DIDs using #{url}" do
@@ -32,11 +37,6 @@ describe DIDKit::Resolver do
     end
 
     [
-      'http://localhost:3000',
-      'http://LOCALHOST:3000/',
-      'http://127.0.0.1:3000/',
-      'http://127.42.0.2:3000',
-      'http://[::1]:3000/',
       'http://plc-mirror.example',
       'http://localhost.example',
       'http://192.168.1.1',

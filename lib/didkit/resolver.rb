@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'ipaddr'
 require 'net/http'
 require 'resolv'
 require 'uri'
@@ -29,7 +30,8 @@ module DIDKit
 
     # @param options [Hash] resolver options
     # @option options [String, Array<String>] :nameserver custom DNS nameserver(s) to use (IP or an array of IPs)
-    # @option options [String] :plc_directory URL or host[:port] of an alternate PLC directory, without a path
+    # @option options [String] :plc_directory URL or host[:port] of an alternate PLC directory,
+    #   without a path; defaults to HTTPS (HTTP allowed for localhost/loopback IPs only)
     # @option options [Integer] :timeout request timeout in seconds (default: 15)
     # @option options [Integer] :max_redirects maximum number of redirects to follow (default: 5)
     #
@@ -162,17 +164,27 @@ module DIDKit
       url = "https://#{url}" unless url.include?('://')
       uri = URI.parse(url.chomp('/'))
 
-      unless uri.is_a?(URI::HTTP) && uri.scheme == 'https' && uri.host && !uri.host.empty? && uri.path.empty?
-        raise ArgumentError, 'PLC directory must be a hostname or a HTTPS URL without a path'
+      unless uri.is_a?(URI::HTTP) && uri.host && !uri.host.empty? && uri.path.empty?
+        raise ArgumentError, 'PLC directory must be a hostname or a HTTP(S) URL without a path'
       end
 
       unless !uri.userinfo && !uri.query && !uri.fragment
         raise ArgumentError, 'PLC directory URL must not include user credentials, query, or fragment part'
       end
 
+      if uri.scheme == 'http' && !loopback_host?(uri.hostname)
+        raise ArgumentError, 'http:// URLs are allowed only with localhost or a loopback IP'
+      end
+
       uri.to_s
     rescue URI::InvalidURIError
       raise ArgumentError, 'Invalid PLC directory URL'
+    end
+
+    def loopback_host?(host)
+      host.downcase == 'localhost' || IPAddr.new(host).loopback?
+    rescue IPAddr::InvalidAddressError
+      false
     end
 
     def parse_did_from_dns(txt)
