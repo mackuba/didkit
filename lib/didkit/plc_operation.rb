@@ -36,10 +36,10 @@ module DIDKit
     attr_reader :created_at
 
     # Returns the `type` field of the operation (usually `"plc_operation"`).
-    # @return [String] the operation type
+    # @return [Symbol] the operation type
     attr_reader :type
 
-    # @return [Array<ServiceRecords>] service records like PDS details assigned to the DID
+    # @return [Array<ServiceRecord>, nil] service records like PDS details assigned to the DID
     attr_reader :services
 
 

@@ -25,7 +25,7 @@ module DIDKit
 
     include Requests
 
-    # @return [String, Array<String>] custom DNS nameserver(s) to use for DNS TXT lookups
+    # @return [String, Array<String>, nil] custom DNS nameserver(s) to use for DNS TXT lookups
     attr_reader :nameserver
 
     # @param options [Hash] resolver options
@@ -34,6 +34,7 @@ module DIDKit
     #   without a path; defaults to HTTPS (HTTP allowed for localhost/loopback IPs only)
     # @option options [Integer] :timeout request timeout in seconds (default: 15)
     # @option options [Integer] :max_redirects maximum number of redirects to follow (default: 5)
+    # @raise [ArgumentError] if the PLC directory address is invalid
     #
     def initialize(options = {})
       @nameserver = options[:nameserver]

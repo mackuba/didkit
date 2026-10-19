@@ -32,7 +32,7 @@ module DIDKit
     # @return [DID] the DID that this document describes
     attr_reader :did
 
-    # @return [Array<ServiceRecords>] service records like PDS details assigned to the DID
+    # @return [Array<ServiceRecord>] service records like PDS details assigned to the DID
     attr_reader :services
 
     # Creates a DID document object.
