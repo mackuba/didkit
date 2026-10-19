@@ -26,7 +26,7 @@ module DIDKit
     include Requests
 
     # @return [String, Array<String>] custom DNS nameserver(s) to use for DNS TXT lookups
-    attr_accessor :nameserver
+    attr_reader :nameserver
 
     # @param options [Hash] resolver options
     # @option options [String, Array<String>] :nameserver custom DNS nameserver(s) to use (IP or an array of IPs)
