@@ -197,7 +197,7 @@ module DIDKit
     end
 
     def resolve_did_plc(did)
-      json = get_json("#{@plc_service}/#{did}", content_type: /^application\/did\+ld\+json(;.+)?$/)
+      json = get_json("#{@plc_service}/#{did}", content_type: /^application\/did(\+ld)?\+json(;.+)?$/)
       Document.new(did, json)
     end
 

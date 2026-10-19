@@ -206,14 +206,23 @@ describe DIDKit::Resolver do
     context 'when passed a did:plc string' do
       let(:did) { 'did:plc:yk4dd2qkboz2yv6tpubpc6co' }
 
-      it 'should return a parsed DID document object' do
-        stub_request(:get, "https://plc.directory/#{did}")
-          .to_return(body: load_did_file('dholms.json'), headers: { 'Content-Type': 'application/did+ld+json; charset=utf-8' })
+      [
+        'application/did+ld+json',
+        'application/did+ld+json; charset=utf-8',
+        'application/did+json',
+        'application/did+json; charset=utf-8'
+      ].each do |content_type|
+        it "should return a parsed DID document for #{content_type}" do
+          json = load_did_json('dholms.json')
+          json.delete('@context') if content_type.start_with?('application/did+json')
+          stub_request(:get, "https://plc.directory/#{did}")
+            .to_return(body: JSON.generate(json), headers: { 'Content-Type' => content_type })
 
-        result = subject.resolve_did(did)
-        result.should be_a(DIDKit::Document)
-        result.handles.should == ['dholms.xyz']
-        result.pds_endpoint.should == 'https://pds.dholms.xyz'
+          result = subject.resolve_did(did)
+          result.should be_a(DIDKit::Document)
+          result.handles.should == ['dholms.xyz']
+          result.pds_endpoint.should == 'https://pds.dholms.xyz'
+        end
       end
 
       it 'should require a valid content type' do

@@ -295,7 +295,7 @@ describe DIDKit::DID do
 
     let(:plc_request) {
       stub_request(:get, "https://plc-mirror.example/#{did}")
-        .to_return(body: load_did_file('dholms.json'), headers: { 'Content-Type' => 'application/did+ld+json' })
+        .to_return(body: load_did_file('dholms.json'), headers: { 'Content-Type' => 'application/did+json' })
     }
 
     before do
