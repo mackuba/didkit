@@ -23,6 +23,9 @@ module DIDKit
     include AtHandles
     include Services
 
+    SERVICE_REGEXP = /\A(did:[^#]+)?#[^#]+\z/
+    private_constant :SERVICE_REGEXP
+
     # @return [Hash] the complete JSON data of the DID document
     attr_reader :json
 
@@ -100,7 +103,16 @@ module DIDKit
 
         raise FormatError, "Missing service id" unless id
         raise FormatError, "Invalid service id: #{id.inspect}" unless id.is_a?(String)
-        next if !id.start_with?('#')
+        next unless id =~ SERVICE_REGEXP
+
+        if id.start_with?('did:')
+          did, rest = id.split('#')
+          next unless did == @did.to_s
+
+          id = rest
+        else
+          id = id.gsub(/^#/, '')
+        end
 
         raise FormatError, "Missing service type" unless type
         raise FormatError, "Invalid service type: #{type.inspect}" unless type.is_a?(String)
@@ -109,7 +121,7 @@ module DIDKit
         raise FormatError, "Invalid service endpoint: #{endpoint.inspect}" unless endpoint.is_a?(String)
 
         begin
-          @services << ServiceRecord.new(id.gsub(/^#/, ''), type, endpoint)
+          @services << ServiceRecord.new(id, type, endpoint)
         rescue FormatError => e
           # ignore services with invalid URIs
         end

@@ -129,12 +129,78 @@ describe DIDKit::Document do
       end
     end
 
-    context 'when service entry id does not start with a #' do
+    context 'when service entry id has no fragment separator' do
       let(:json) { base_json.merge('service' => [service]) }
       let(:service) {{ 'id' => 'atproto_pds', 'type' => 'AtprotoPersonalDataServer', 'serviceEndpoint' => 'https://pds.dholms.xyz' }}
 
       it 'should *not* raise a format error' do
         expect { subject.new(did, json) }.to_not raise_error
+      end
+    end
+
+    context 'parsing service identifiers' do
+      let(:service_id) { '#atproto_pds' }
+      let(:service) {
+        { 'id' => service_id, 'type' => 'AtprotoPersonalDataServer', 'serviceEndpoint' => 'https://pds.dholms.xyz' }
+      }
+
+      let(:json) { base_json.merge('service' => [service]) }
+
+      ['relative', 'fully qualified'].each do |format|
+        context "with a #{format} identifier" do
+          let(:service_id) { format == 'relative' ? '#atproto_pds' : "#{did}#atproto_pds" }
+
+          it 'should normalize the service key and make the endpoint available' do
+            doc = subject.new(did, json)
+
+            doc.services.map(&:key).should == ['atproto_pds']
+            doc.get_service('atproto_pds', 'AtprotoPersonalDataServer').endpoint.should == 'https://pds.dholms.xyz'
+            doc.pds_endpoint.should == 'https://pds.dholms.xyz'
+          end
+        end
+      end
+
+      [
+        '',
+        '#',
+        'atproto_pds',
+        '##atproto_pds',
+        '#atproto_pds#extra',
+        '%{did}',
+        '%{did}#',
+        '%{did}##atproto_pds',
+        '%{did}#atproto_pds#extra',
+        '%{did}extra#atproto_pds',
+        'did:plc:oio4hkxaop4ao4wz2pp3f4cr#atproto_pds',
+        'did:web:example.com#atproto_pds',
+        'https://example.com#atproto_pds'
+      ].each do |template|
+        context "with an invalid or foreign identifier #{template.inspect}" do
+          let(:service_id) { template % { did: did.to_s } }
+
+          it 'should ignore the service without rejecting the document' do
+            doc = subject.new(did, json)
+
+            doc.services.should == []
+            doc.pds_endpoint.should be_nil
+          end
+        end
+      end
+
+      it 'should keep valid services when a foreign service with the same fragment appears first' do
+        foreign_service = service.merge(
+          'id' => 'did:web:example.com#atproto_pds',
+          'serviceEndpoint' => 'https://wrong-pds.example'
+        )
+
+        valid_service = service.merge('id' => "#{did}#atproto_pds")
+        other_service = service.merge('id' => '#custom', 'type' => 'CustomService')
+
+        json = base_json.merge('service' => [foreign_service, valid_service, other_service])
+        doc = subject.new(did, json)
+
+        doc.services.map(&:key).should == ['atproto_pds', 'custom']
+        doc.pds_endpoint.should == 'https://pds.dholms.xyz'
       end
     end
 
