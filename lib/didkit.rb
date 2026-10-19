@@ -2,6 +2,7 @@
 
 require_relative "didkit/did"
 require_relative "didkit/document"
+require_relative "didkit/global_did"
 require_relative "didkit/plc_importer"
 require_relative "didkit/plc_operation"
 require_relative "didkit/resolver"
@@ -16,5 +17,3 @@ module DIDKit
 
   self.default_resolver = Resolver.new
 end
-
-DID = DIDKit::DID
