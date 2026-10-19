@@ -1,12 +1,25 @@
 ## Unreleased
 
-- added support for decoding public (signing) keys – `Document#signing_key`, `PLCOperation#signing_key` and `DIDKit::PublicKey` class
-- breaking change: the [ATProto DID spec](https://atproto.com/specs/did#did-documents) now says that if there are multiple handles in a document, only the first one should be checked bi-directionally and the rest should be skipped:
+Possibly breaking changes:
+
+- the [ATProto DID spec](https://atproto.com/specs/did#did-documents) now says that if there are multiple handles in a document, only the first one should be checked bi-directionally and the rest should be skipped:
 
     > The first syntactically valid handle found in the ordered list is treated as the claimed handle, even if it fails to resolve bi-directionally. Any other handle URIs should be ignored.
 
     - the `get_verified_handle` algorithm has been updated to match this behavior
     - `Resolver#first_verified_handle` method has been removed
+- `DIDKit::PLCImporter::PLC_SERVICE` was moved to `DIDKit::Resolver::DEFAULT_PLC_DIRECTORY`
+- `DIDKit::Resolver#nameserver` has been changed to be read-only
+- `DIDKit::Resolver#resolve_handle` and `DID.resolve_handle` now verify the resolve handle bi-directionally, checking also if the matched DID has that handle assigned too; pass `verify: false` to skip this (default is true)
+
+Added:
+
+- added support for decoding public (signing) keys – `Document#signing_key`, `PLCOperation#signing_key` and `DIDKit::PublicKey` class
+- `DIDKit::Resolver` now accepts a `:plc_directory` option that lets you use a PLC mirror server instead of `https://plc.directory`
+- added a shared global `DIDKit.default_resolver`, used internally by `DID` & `Document` – you can reassign it to one configured with a custom DNS nameserver or PLC mirror
+- added support for PLC servers returning `application/did+json` content type instead of `application/did+ld+json` (the spec allows it and the replica server implementation does that)
+- added support for PLC servers returning services with IDs in the absolute format `did:...#id` instead of just `#id`
+- the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
 
 ## [0.4.0] - 2026-07-02
 
