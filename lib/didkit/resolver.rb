@@ -2,6 +2,7 @@
 
 require 'net/http'
 require 'resolv'
+require 'uri'
 
 require_relative 'did'
 require_relative 'document'
@@ -18,6 +19,9 @@ module DIDKit
     # without trying to look them up.
     RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
 
+    # URL of the standard PLC directory service.
+    DEFAULT_PLC_DIRECTORY = 'https://plc.directory'
+
     include Requests
 
     # @return [String, Array<String>] custom DNS nameserver(s) to use for DNS TXT lookups
@@ -25,11 +29,13 @@ module DIDKit
 
     # @param options [Hash] resolver options
     # @option options [String, Array<String>] :nameserver custom DNS nameserver(s) to use (IP or an array of IPs)
+    # @option options [String] :plc_directory URL or host[:port] of an alternate PLC directory, without a path
     # @option options [Integer] :timeout request timeout in seconds (default: 15)
     # @option options [Integer] :max_redirects maximum number of redirects to follow (default: 5)
-
+    #
     def initialize(options = {})
       @nameserver = options[:nameserver]
+      @plc_service = options.key?(:plc_directory) ? parse_plc_service(options[:plc_directory]) : DEFAULT_PLC_DIRECTORY
       @request_options = options.slice(:timeout, :max_redirects)
     end
 
@@ -107,7 +113,8 @@ module DIDKit
     # Resolve a DID to a DID document.
     #
     # Looks up the DID document with the DID's identity details from an appropriate source, i.e. either
-    # [plc.directory](https://plc.directory) for did:plc DIDs, or the did:web's domain for did:web DIDs.
+    # [plc.directory](https://plc.directory) or its mirror for did:plc DIDs, or the did:web's domain
+    # for did:web DIDs.
     #
     # @param did [String, DID] DID string or object
     # @return [Document] resolved DID document
@@ -149,6 +156,25 @@ module DIDKit
       options
     end
 
+    def parse_plc_service(url)
+      raise ArgumentError, 'PLC directory URL must be a string' unless url.is_a?(String)
+
+      url = "https://#{url}" unless url.include?('://')
+      uri = URI.parse(url.chomp('/'))
+
+      unless uri.is_a?(URI::HTTP) && uri.scheme == 'https' && uri.host && !uri.host.empty? && uri.path.empty?
+        raise ArgumentError, 'PLC directory must be a hostname or a HTTPS URL without a path'
+      end
+
+      unless !uri.userinfo && !uri.query && !uri.fragment
+        raise ArgumentError, 'PLC directory URL must not include user credentials, query, or fragment part'
+      end
+
+      uri.to_s
+    rescue URI::InvalidURIError
+      raise ArgumentError, 'Invalid PLC directory URL'
+    end
+
     def parse_did_from_dns(txt)
       txt =~ /\Adid\=(did\:\w+\:.*)\z/ ? $1 : nil
     end
@@ -159,7 +185,7 @@ module DIDKit
     end
 
     def resolve_did_plc(did)
-      json = get_json("https://plc.directory/#{did}", content_type: /^application\/did\+ld\+json(;.+)?$/)
+      json = get_json("#{@plc_service}/#{did}", content_type: /^application\/did\+ld\+json(;.+)?$/)
       Document.new(did, json)
     end
 

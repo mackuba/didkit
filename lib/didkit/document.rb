@@ -10,7 +10,8 @@ require_relative 'services'
 module DIDKit
 
   #
-  # Parsed DID document from a JSON file loaded from [plc.directory](https://plc.directory) or a did:web domain.
+  # Parsed DID document from a JSON file loaded from the PLC directory ([plc.directory](https://plc.directory)
+  # or a mirror) or from a did:web domain.
   #
   # Use {DID#document} or {Resolver#resolve_did} to fetch a DID document and return this object.
   #

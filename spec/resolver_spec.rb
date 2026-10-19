@@ -1,6 +1,78 @@
 describe DIDKit::Resolver do
   let(:sample_did) { 'did:plc:qhfo22pezo44fa3243z2h4ny' }
 
+  describe '#initialize' do
+    [
+      'https://plc-mirror.example',
+      'https://plc-mirror.example/',
+      'https://plc-mirror.example:8443/',
+      'plc.directory',
+      'plc-mirror.example:8443',
+      'plc-mirror.example:8443/',
+      'localhost:3000',
+      '127.0.0.1:3000',
+      '[::1]:3000',
+      'https://[2001:db8::1]:8443'
+    ].each do |url|
+      it "should resolve PLC DIDs using #{url}" do
+        did = 'did:plc:yk4dd2qkboz2yv6tpubpc6co'
+        base_url = url.include?('://') ? url : "https://#{url}"
+
+        request = stub_request(:get, "#{base_url.delete_suffix('/')}/#{did}")
+          .to_return(body: load_did_file('dholms.json'), headers: { 'Content-Type': 'application/did+ld+json' })
+
+        resolver = described_class.new(plc_directory: url)
+        result = resolver.resolve_did(did)
+
+        result.should be_a(DIDKit::Document)
+        result.did.to_s.should == did
+        result.handles.should == ['dholms.xyz']
+        expect(request).to have_been_requested.once
+      end
+    end
+
+    [
+      'http://localhost:3000',
+      'http://LOCALHOST:3000/',
+      'http://127.0.0.1:3000/',
+      'http://127.42.0.2:3000',
+      'http://[::1]:3000/',
+      'http://plc-mirror.example',
+      'http://localhost.example',
+      'http://192.168.1.1',
+      'http://0.0.0.0',
+      'http://128.0.0.1',
+      'http://[::]',
+      'http://[2001:db8::1]',
+      'ftp://localhost',
+      '//plc.directory',
+      'plc.directory/a',
+      'plc.directory:8443/a',
+      'plc.directory?query=value',
+      'plc.directory#fragment',
+      'user:password@plc.directory',
+      'plc.directory:invalid',
+      'https://',
+      'https://plc.directory/a',
+      'https://plc.directory//',
+      'http://localhost:3000/a',
+      'https://plc.directory/%2F',
+      'https://plc.directory?query=value',
+      'https://plc.directory/#fragment',
+      'https://user:password@plc.directory',
+      'https://plc.directory:invalid',
+      'not a URL',
+      '',
+      false,
+      123,
+      URI('https://plc.directory')
+    ].each do |url|
+      it "should reject an invalid PLC directory URL: #{url.inspect}" do
+        expect { described_class.new(plc_directory: url) }.to raise_error(ArgumentError)
+      end
+    end
+  end
+
   describe '#resolve_handle' do
     context 'when handle resolves via HTTP' do
       before do

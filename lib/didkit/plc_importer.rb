@@ -7,6 +7,7 @@ require 'uri'
 require_relative 'errors'
 require_relative 'plc_operation'
 require_relative 'requests'
+require_relative 'resolver'
 
 #
 # NOTE: this class is pending a rewrite once new APIs are deployed to plc.directory.
@@ -15,7 +16,6 @@ require_relative 'requests'
 
 module DIDKit
   class PLCImporter
-    PLC_SERVICE = 'plc.directory'
     MAX_PAGE = 1000
 
     include Requests
@@ -35,7 +35,7 @@ module DIDKit
       end
 
       @last_page_cids = []
-      @plc_service = service || PLC_SERVICE
+      @plc_service = service || Resolver::DEFAULT_PLC_DIRECTORY
     end
 
     def get_export(args = {})
