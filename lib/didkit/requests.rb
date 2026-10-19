@@ -41,7 +41,10 @@ module DIDKit
         end
 
         if response.is_a?(Net::HTTPRedirection) && redirects < max_redirects && (location = response['Location'])
-          url = URI(location.include?('://') ? location : (uri_origin(url) + location))
+          target = URI(location.include?('://') ? location : (uri_origin(url) + location))
+          return response if url.scheme == 'https' && target.scheme == 'http'
+
+          url = target
 
           if visited_urls.include?(url)
             return response
