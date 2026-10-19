@@ -288,4 +288,76 @@ describe DIDKit::DID do
       end
     end
   end
+
+  context 'with a custom default resolver' do
+    let(:resolver) { DIDKit::Resolver.new(nameserver: '1.1.1.1', plc_directory: 'https://plc-mirror.example') }
+    let(:did) { subject.new('did:plc:yk4dd2qkboz2yv6tpubpc6co') }
+
+    let(:plc_request) {
+      stub_request(:get, "https://plc-mirror.example/#{did}")
+        .to_return(body: load_did_file('dholms.json'), headers: { 'Content-Type' => 'application/did+ld+json' })
+    }
+
+    before do
+      @original_resolver = DIDKit.default_resolver
+      DIDKit.default_resolver = resolver
+    end
+
+    after do
+      DIDKit.default_resolver = @original_resolver
+    end
+
+    it 'should use the configured nameserver for class-level handle resolution' do
+      dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+
+      Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+      dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+        .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+
+      result = subject.resolve_handle('dholms.xyz')
+
+      result.should == did
+      result.resolved_by.should == :dns
+    end
+
+    it 'should preserve a nil result when the resolver cannot resolve a handle' do
+      dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+
+      Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+      dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT).returns([])
+
+      request = stub_request(:get, 'https://dholms.xyz/.well-known/atproto-did').to_return(status: 404)
+
+      result = subject.resolve_handle('dholms.xyz')
+      result.should be_nil
+
+      expect(request).to have_been_requested.once
+    end
+
+    it 'should use the configured resolver when get_document is called' do
+      request = plc_request
+
+      2.times do
+        document = did.get_document
+        document.did.should == did
+        document.pds_endpoint.should == 'https://pds.dholms.xyz'
+      end
+
+      expect(request).to have_been_requested.twice
+    end
+
+    it 'should use the configured resolver to fetch the document and verify its handle' do
+      request = plc_request
+
+      dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+
+      Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+      dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+        .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+
+      did.get_verified_handle.should == 'dholms.xyz'
+
+      expect(request).to have_been_requested.once
+    end
+  end
 end

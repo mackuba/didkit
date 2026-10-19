@@ -233,6 +233,41 @@ describe DIDKit::Document do
       doc = subject.new(did, json)
       doc.get_verified_handle.should be_nil
     end
+
+    context 'with a custom default resolver' do
+      let(:resolver) { DIDKit::Resolver.new(nameserver: '1.1.1.1') }
+
+      before do
+        @original_resolver = DIDKit.default_resolver
+        DIDKit.default_resolver = resolver
+      end
+
+      after do
+        DIDKit.default_resolver = @original_resolver
+      end
+
+      it 'should use the configured nameserver to verify the handle' do
+        doc = subject.new(did, json)
+
+        dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+        Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+        dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+          .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+
+        doc.get_verified_handle.should == 'dholms.xyz'
+      end
+
+      it 'should return nil when the configured resolver cannot verify a handle' do
+        doc = subject.new(did, json)
+
+        dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+        Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+        dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+          .returns([Resolv::DNS::Resource::IN::TXT.new('did=did:plc:vc7f4oafdgxsihk4cry2xpze')])
+
+        doc.get_verified_handle.should be_nil
+      end
+    end
   end
 
   describe '#signing_key' do

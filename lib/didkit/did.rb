@@ -34,7 +34,7 @@ module DIDKit
     # @return [DID, nil] resolved DID if found, nil otherwise
 
     def self.resolve_handle(handle)
-      Resolver.new.resolve_handle(handle)
+      DIDKit.default_resolver.resolve_handle(handle)
     end
 
     # @return [Symbol] DID type (`:plc` or `:web`)
@@ -87,7 +87,7 @@ module DIDKit
     # @return [Document] resolved DID document
 
     def get_document
-      Resolver.new.resolve_did(self)
+      DIDKit.default_resolver.resolve_did(self)
     end
 
     # Returns the current primary handle assigned to the DID, if it verifies correctly.
@@ -99,7 +99,7 @@ module DIDKit
     # @return [String, nil] verified handle domain, if found
 
     def get_verified_handle
-      Resolver.new.get_verified_handle(document)
+      DIDKit.default_resolver.get_verified_handle(document)
     end
 
     # Fetches the PLC audit log (list of all previous operations) for a did:plc DID.

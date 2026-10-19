@@ -59,7 +59,7 @@ module DIDKit
     # @return [String, nil] verified handle domain, if found
 
     def get_verified_handle
-      Resolver.new.get_verified_handle(self)
+      DIDKit.default_resolver.get_verified_handle(self)
     end
 
     # Returns the account's public signing key parsed from the DID document's `verificationMethod`.
