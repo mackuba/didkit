@@ -32,7 +32,7 @@ describe DIDKit::Resolver do
         result.should be_a(DIDKit::Document)
         result.did.to_s.should == did
         result.handles.should == ['dholms.xyz']
-        expect(request).to have_been_requested.once
+        request.should have_been_requested.once
       end
     end
 
@@ -406,7 +406,7 @@ describe DIDKit::Resolver do
       subject.get_verified_handle(did).should == 'dholms.xyz'
     end
 
-    it "should return nil if the first handle doesn't validate" do
+    it "should return nil if the first handle doesn't resolve to the DID" do
       DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns('')
 
       subject.get_verified_handle(did).should be_nil

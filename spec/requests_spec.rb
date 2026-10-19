@@ -15,7 +15,7 @@ describe DIDKit::Requests do
       expect { subject.send(:get_data, 'https://plc.directory/start') }
         .to raise_error(DIDKit::APIError) { |error| error.status.should == 302 }
 
-      expect(target).not_to have_been_requested
+      target.should_not have_been_requested
     end
 
     it 'should reject a downgrade after an HTTP request has redirected to HTTPS' do
@@ -29,7 +29,7 @@ describe DIDKit::Requests do
       expect { subject.send(:get_data, 'http://localhost/start') }
         .to raise_error(DIDKit::APIError) { |error| error.status.should == 307 }
 
-      expect(target).not_to have_been_requested
+      target.should_not have_been_requested
     end
 
     [
@@ -47,7 +47,7 @@ describe DIDKit::Requests do
         response = subject.send(:get_data, source)
         response.should == 'resolved'
 
-        expect(request).to have_been_requested.once
+        request.should have_been_requested.once
       end
     end
   end

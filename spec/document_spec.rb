@@ -279,14 +279,14 @@ describe DIDKit::Document do
       "at://dholms.bsky.team"
     ])}
 
-    it 'should return first syntactically correct handle if it validates' do
+    it 'should return first syntactically correct handle if it verifies in the other direction' do
       DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns(did.to_s)
 
       doc = subject.new(did, json)
       doc.get_verified_handle.should == 'dholms.xyz'
     end
 
-    it "should return nil if the first handle doesn't validate" do
+    it "should return nil if the first handle doesn't resolve to the same DID" do
       DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns('')
 
       doc = subject.new(did, json)

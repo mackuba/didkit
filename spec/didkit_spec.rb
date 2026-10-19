@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe DIDKit do
-  it "has a version number" do
-    expect(DIDKit::VERSION).not_to be nil
+  it "should have a version number" do
+    DIDKit::VERSION.should_not be nil
   end
 
   describe '.default_resolver' do

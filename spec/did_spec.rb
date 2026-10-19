@@ -267,20 +267,20 @@ describe DIDKit::DID do
     end
 
     describe '#get_verified_handle' do
-      it 'should return first syntactically correct handle if it validates' do
+      it 'should return first syntactically correct handle if it verifies in the other direction' do
         DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns(did.to_s)
 
         did.get_verified_handle.should == 'dholms.xyz'
       end
 
-      it "should return nil if the first handle doesn't validate" do
+      it "should return nil if the first handle doesn't resolve to the same DID" do
         DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns('')
 
         did.get_verified_handle.should be_nil
       end
 
       context 'if there are no syntactically valid handles' do
-        let(:json) { base_json.merge('alsoKnownAs' => ["mozilla.org"])}
+        let(:json) { base_json.merge('alsoKnownAs' => ["mozilla.org", "firefox.com"])}
 
         it "should return nil" do
           did.get_verified_handle.should be_nil
@@ -371,7 +371,7 @@ describe DIDKit::DID do
       result = subject.resolve_handle('dholms.xyz')
       result.should be_nil
 
-      expect(request).to have_been_requested.once
+      request.should have_been_requested.once
     end
 
     it 'should use the configured resolver when get_document is called' do
@@ -383,7 +383,7 @@ describe DIDKit::DID do
         document.pds_endpoint.should == 'https://pds.dholms.xyz'
       end
 
-      expect(request).to have_been_requested.twice
+      request.should have_been_requested.twice
     end
 
     it 'should use the configured resolver to fetch the document and verify its handle' do
@@ -397,7 +397,7 @@ describe DIDKit::DID do
 
       did.get_verified_handle.should == 'dholms.xyz'
 
-      expect(request).to have_been_requested.once
+      request.should have_been_requested.once
     end
   end
 end
