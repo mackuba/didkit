@@ -74,6 +74,130 @@ describe DIDKit::Resolver do
   end
 
   describe '#resolve_handle' do
+    let(:handle) { 'dholms.xyz' }
+    let(:plc_directory) { 'https://plc.directory' }
+    let(:document_json) {{ 'id' => sample_did, 'alsoKnownAs' => ["at://#{handle.to_s.delete_prefix('@')}"] }}
+
+    let(:document_request) {
+      stub_request(:get, "#{plc_directory}/#{sample_did}")
+        .to_return(body: JSON.generate(document_json), headers: { 'Content-Type' => 'application/did+json' })
+    }
+
+    before { document_request }
+
+    [:dns, :http].each do |method|
+      context "when resolving a handle that is verified by #{method}" do
+        let(:plc_directory) { 'https://plc-mirror.example' }
+
+        subject { described_class.new(plc_directory: plc_directory) }
+
+        before do
+          if method == :dns
+            Resolv::DNS.stubs(:open).returns([Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}")])
+          else
+            Resolv::DNS.stubs(:open).returns([])
+            stub_request(:get, "https://#{handle}/.well-known/atproto-did").to_return(body: sample_did)
+          end
+        end
+
+        context 'with default verify setting' do
+          it 'should verify that the resolved DID has this handle assigned in DID document' do
+            result = subject.resolve_handle(handle)
+
+            result.should == sample_did
+            result.resolved_by.should == method
+
+            document_request.should have_been_requested.once
+          end
+
+          it 'should look up the DID document in the configured PLC directory mirror' do
+            WebMock.should_not have_requested(:get, "https://plc.directory/#{sample_did}")          
+          end          
+
+          context 'when the DID has a different handle assigned' do
+            let(:document_json) {{ 'id' => sample_did, 'alsoKnownAs' => ['at://other.example'] }}
+
+            it 'should return nil' do
+              subject.resolve_handle(handle).should be_nil
+
+              document_request.should have_been_requested.once
+            end
+          end
+
+          context 'when the DID has no handles' do
+            let(:document_json) {{ 'id' => sample_did }}
+
+            it 'should return nil' do
+              subject.resolve_handle(handle).should be_nil
+            end
+          end
+
+          context 'when the matching handle is not the primary handle' do
+            let(:document_json) {
+              { 'id' => sample_did, 'alsoKnownAs' => ['at://other.example', "at://#{handle}"] }
+            }
+
+            it 'should return nil even though the handle appears in alsoKnownAs' do
+              subject.resolve_handle(handle).should be_nil
+            end
+          end
+
+          context 'when alsoKnownAs contains unrelated URIs before the primary handle' do
+            let(:document_json) {
+              { 'id' => sample_did, 'alsoKnownAs' => ['https://example.com', "at://#{handle}"] }
+            }
+
+            it 'should accept the first valid AT Protocol handle' do
+              subject.resolve_handle(handle).should == sample_did
+            end
+          end
+        end
+
+        context 'with explicit verify: true' do
+          it 'should verify that the resolved DID has this handle assigned in DID document' do
+            result = subject.resolve_handle(handle, verify: true)
+
+            result.should == sample_did
+            result.resolved_by.should == method
+
+            document_request.should have_been_requested.once
+          end          
+        end
+
+        context 'with verify: false' do
+          context 'when the DID has a different handle assigned' do
+            let(:document_json) {{ 'id' => sample_did, 'alsoKnownAs' => ['at://other.example'] }}
+
+            it 'should not verify the handle bi-directionally and accept the assigned DID' do
+              result = subject.resolve_handle(handle, verify: false)
+
+              result.should == sample_did
+              result.resolved_by.should == method
+
+              document_request.should_not have_been_requested
+            end
+          end          
+        end
+      end
+    end
+
+    context 'when the handle resolves to a did:web' do
+      let(:sample_did) { 'did:web:witchcraft.systems' }
+
+      before do
+        Resolv::DNS.stubs(:open).returns([Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}")])
+
+        stub_request(:get, 'https://witchcraft.systems/.well-known/did.json')
+          .to_return(body: JSON.generate(document_json), headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'should load the DID document to verify the handle in from the did:web domain' do
+        subject.resolve_handle(handle).should == sample_did
+
+        document_request.should_not have_been_requested
+      end
+    end
+
     context 'when handle resolves via HTTP' do
       before do
         Resolv::DNS.stubs(:open).returns([])
@@ -186,6 +310,8 @@ describe DIDKit::Resolver do
 
         result.should be_a(DID)
         result.to_s.should == BSKY_APP_DID
+
+        document_request.should_not have_been_requested
       end
     end
 
@@ -198,6 +324,8 @@ describe DIDKit::Resolver do
         result.should be_a(DID)
         result.to_s.should == BSKY_APP_DID
         result.equal?(handle).should == false
+
+        document_request.should_not have_been_requested
       end
     end
   end
@@ -273,15 +401,22 @@ describe DIDKit::Resolver do
     end
 
     it 'should return first syntactically correct handle if it resolves back to the DID' do
-      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns(did.to_s)
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns(did.to_s)
 
       subject.get_verified_handle(did).should == 'dholms.xyz'
     end
 
     it "should return nil if the first handle doesn't validate" do
-      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns('')
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns('')
 
       subject.get_verified_handle(did).should be_nil
+    end
+
+    it 'should not re-fetch the already fetched DID document to verify the handle bi-directionally' do
+      Resolv::DNS.stubs(:open).returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+
+      subject.get_verified_handle(did).should == 'dholms.xyz'
+      WebMock.should have_requested(:get, "https://plc.directory/#{did}").once
     end
 
     context 'if there are no syntactically valid handles' do

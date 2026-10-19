@@ -31,10 +31,13 @@ module DIDKit
     # check which one it is.
     #
     # @param handle [String, DID] a domain handle (may start with an `@`) or a DID string
+    # @param verify [Boolean] require the handle to be assigned to the DID in the DID document (default: true)
     # @return [DID, nil] resolved DID if found, nil otherwise
+    # @raise [APIError] if verification is enabled and the DID document request is unsuccessful
+    # @raise [FormatError] if verification is enabled and the DID document has invalid data
 
-    def self.resolve_handle(handle)
-      DIDKit.default_resolver.resolve_handle(handle)
+    def self.resolve_handle(handle, verify: true)
+      DIDKit.default_resolver.resolve_handle(handle, verify: verify)
     end
 
     # @return [Symbol] DID type (`:plc` or `:web`)

@@ -268,13 +268,13 @@ describe DIDKit::DID do
 
     describe '#get_verified_handle' do
       it 'should return first syntactically correct handle if it validates' do
-        DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns(did.to_s)
+        DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns(did.to_s)
 
         did.get_verified_handle.should == 'dholms.xyz'
       end
 
       it "should return nil if the first handle doesn't validate" do
-        DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns('')
+        DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns('')
 
         did.get_verified_handle.should be_nil
       end
@@ -307,17 +307,57 @@ describe DIDKit::DID do
       DIDKit.default_resolver = @original_resolver
     end
 
-    it 'should use the configured nameserver for class-level handle resolution' do
-      dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+    context 'with default verification not explicitly disabled' do
+      it 'should use the configured nameserver for handle resolution' do
+        request = plc_request
+        dns = Resolv::DNS.new(nameserver: '1.1.1.1')
 
-      Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
-      dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
-        .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+        Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+        dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+          .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
 
-      result = subject.resolve_handle('dholms.xyz')
+        result = subject.resolve_handle('dholms.xyz')
 
-      result.should == did
-      result.resolved_by.should == :dns
+        result.should == did
+        result.resolved_by.should == :dns
+
+        request.should have_been_requested.once
+      end
+
+      it 'should reject a resolved DID if it does not have the handle listed in the DID document' do
+        json = load_did_json('dholms.json').merge('alsoKnownAs' => ['at://other.example'])
+
+        request = stub_request(:get, "https://plc-mirror.example/#{did}")
+          .to_return(body: JSON.generate(json), headers: { 'Content-Type' => 'application/did+json' })
+
+        dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+
+        Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+        dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+          .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+
+        result = subject.resolve_handle('dholms.xyz')
+        result.should be_nil
+        request.should have_been_requested.once
+      end
+    end
+
+    context 'with verify: false' do
+      it 'should accept a resolved DID without checking if it has the handle listed in DID document' do
+        dns = Resolv::DNS.new(nameserver: '1.1.1.1')
+
+        Resolv::DNS.expects(:new).with(has_entry(:nameserver, '1.1.1.1')).returns(dns)
+        dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+          .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{did}")])
+
+        result = subject.resolve_handle('dholms.xyz', verify: false)
+
+        result.should == did
+        result.resolved_by.should == :dns
+  
+        WebMock.should_not have_requested(:get, "https://plc-mirror.example/#{did}")
+        WebMock.should_not have_requested(:get, "https://plc.directory/#{did}")
+      end      
     end
 
     it 'should preserve a nil result when the resolver cannot resolve a handle' do

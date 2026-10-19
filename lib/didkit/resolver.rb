@@ -49,9 +49,12 @@ module DIDKit
     # check which one it is.
     #
     # @param handle [String, DID] a domain handle (may start with an `@`) or a DID string
+    # @param verify [Boolean] require the handle to be assigned to the DID in the DID document (default: true)
     # @return [DID, nil] resolved DID if found, nil otherwise
+    # @raise [APIError] if verification is enabled and the DID document request is unsuccessful
+    # @raise [FormatError] if verification is enabled and the DID document has invalid data
 
-    def resolve_handle(handle)
+    def resolve_handle(handle, verify: true)
       if handle.is_a?(DID) || handle =~ DID::GENERIC_REGEXP
         return DID.new(handle)
       end
@@ -61,12 +64,19 @@ module DIDKit
       return nil if RESERVED_DOMAINS.include?(domain.split('.').last)
 
       if dns_did = resolve_handle_by_dns(domain)
-        DID.new(dns_did, :dns)
+        referenced_did = DID.new(dns_did, :dns)
       elsif http_did = resolve_handle_by_well_known(domain)
-        DID.new(http_did, :http)
+        referenced_did = DID.new(http_did, :http)
       else
-        nil
+        return nil
       end
+
+      if verify
+        document = self.resolve_did(referenced_did)
+        return nil unless document.handles.first == domain
+      end
+
+      referenced_did
     end
 
     # Tries to resolve a handle into DID using the DNS TXT method.
@@ -142,11 +152,10 @@ module DIDKit
 
       primary_handle = document.handles.first
 
-      if primary_handle && resolve_handle(primary_handle) == document.did.to_s
-        primary_handle
-      else
-        nil
-      end
+      return nil if primary_handle.nil?
+      return nil unless resolve_handle(primary_handle, verify: false) == document.did.to_s
+
+      primary_handle
     end
 
 

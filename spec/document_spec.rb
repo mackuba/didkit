@@ -280,14 +280,14 @@ describe DIDKit::Document do
     ])}
 
     it 'should return first syntactically correct handle if it validates' do
-      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns(did.to_s)
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns(did.to_s)
 
       doc = subject.new(did, json)
       doc.get_verified_handle.should == 'dholms.xyz'
     end
 
     it "should return nil if the first handle doesn't validate" do
-      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz').returns('')
+      DIDKit::Resolver.any_instance.stubs(:resolve_handle).with('dholms.xyz', verify: false).returns('')
 
       doc = subject.new(did, json)
       doc.get_verified_handle.should be_nil
