@@ -79,8 +79,6 @@ Also:
 - `PLCImporter` now removes duplicate operations at the edge of pages returned from the `/export` API
 - rewritten some networking code – all classes now use `Net::HTTP` with consistent options instead of `open-uri`
 
-Note: `PLCImporter` will be rewritten soon to add support for updated [plc.directory](https://plc.directory) APIs, so be prepared for some breaking changes there in v. 0.4.
-
 ## [0.2.3] - 2024-07-02
 
 - added a `DID#get_audit_log` method that fetches the PLC audit log for a DID

@@ -10,8 +10,8 @@ require_relative 'plc_operation'
 require_relative 'requests'
 
 #
-# NOTE: this class is pending a rewrite once new APIs are deployed to plc.directory.
-# Things will change here in v. 0.5.
+# NOTE: this class is pending a rewrite to handle updated plc.directory APIs.
+# Things will change here in v. 0.6.
 #
 
 module DIDKit
