@@ -42,6 +42,8 @@ This returns a `DID` object, which tells you:
 - the DID type (`#type`, `:plc` or `:web`)
 - if the handle was resolved via a DNS entry or a `.well-known` file (`#resolved_by`, `:dns` or `:http`)
 
+The handle is automatically verified bi-directionally, i.e. the resolver loads the DID document for e.g. `did:plc:oky5czdrnfjpqslsw2a5iclo` and checks if the handle `jay.bsky.team` is listed there under `alsoKnownAs`. If you want to skip that second check, pass `verify: false` to `#resolve_handle`.
+
 To go in the other direction – to find an assigned and verified handle given a DID – create a `DID` from a DID string and call `get_verified_handle`:
 
 ```rb
@@ -89,6 +91,7 @@ You can customize some things about the DID/handle lookups by using the `DIDKit:
 Currently available options include:
 
 - `:nameserver` – override the nameserver used for DNS lookups, e.g. to use Google's or CloudFlare's DNS
+- `:plc_directory` – hostname or URL of a PLC directory mirror to use instead of `plc.directory`
 - `:timeout` – change the connection/response timeout for HTTP requests (default: 15 s)
 - `:max_redirects` – change allowed maximum number of redirects (default: 5)
 
@@ -107,6 +110,24 @@ resolver.resolve_did(did)
 resolver.get_verified_handle(did)
   # => 'nytimes.com'
 ```
+
+`DID` and `Document` use a shared global resolver instance at `DIDKit.default_resolver`, which you can overwrite with one using a custom config:
+
+```rb
+DIDKit.default_resolver = DIDKit::Resolver.new(plc_directory: 'plc.eurosky.network')
+
+did = DID.resolve_handle('mackuba.eu')
+puts did.document.pds_host
+# uses plc.eurosky.network to look up DID info
+```
+
+More info in the [YARD API docs](https://rubydoc.info/gems/didkit).
+
+
+### Global DID alias
+
+As mentioned earlier, DIDKit defines a global alias `DID` as a shorthand for `DIDKit::DID`. If this happens to conflict with another constant defined by your app or a different dependency, make sure to `require 'didkit'` *after* that constant is already defined, or alternatively, require e.g. `'didkit/did'` directly, which skips the `global_did.rb` file which defines the global `DID`.
+
 
 ## Other resources
 
