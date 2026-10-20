@@ -8,7 +8,8 @@ Possibly breaking changes:
 
     - the `get_verified_handle` algorithm has been updated to match this behavior
     - `Resolver#first_verified_handle` method has been removed
-- `DIDKit::PLCImporter::PLC_SERVICE` was moved to `DIDKit::Resolver::DEFAULT_PLC_DIRECTORY`
+- `DIDKit::PLCImporter::PLC_SERVICE` was moved to `DIDKit::DEFAULT_PLC_DIRECTORY`
+- `DIDKit::DID::GENERIC_REGEXP` was moved to `DIDKit::GENERIC_DID_REGEXP`
 - `DIDKit::Resolver#nameserver` has been changed to be read-only
 - `DIDKit::Resolver#resolve_handle` and `DID.resolve_handle` now verify the resolve handle bi-directionally, checking also if the matched DID has that handle assigned too; pass `verify: false` to skip this (default is true)
 
@@ -19,7 +20,11 @@ Added:
 - added a shared global `DIDKit.default_resolver`, used internally by `DID` & `Document` – you can reassign it to one configured with a custom DNS nameserver or PLC mirror
 - added support for PLC servers returning `application/did+json` content type instead of `application/did+ld+json` (the spec allows it and the replica server implementation does that)
 - added support for PLC servers returning services with IDs in the absolute format `did:...#id` instead of just `#id`
+
+Other:
+
 - the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
+- more detailed validation of DID and handle strings
 
 ## [0.4.0] - 2026-07-02
 

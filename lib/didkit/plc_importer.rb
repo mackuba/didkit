@@ -4,10 +4,10 @@ require 'json'
 require 'time'
 require 'uri'
 
+require_relative 'constants'
 require_relative 'errors'
 require_relative 'plc_operation'
 require_relative 'requests'
-require_relative 'resolver'
 
 #
 # NOTE: this class is pending a rewrite once new APIs are deployed to plc.directory.
@@ -35,7 +35,7 @@ module DIDKit
       end
 
       @last_page_cids = []
-      @plc_service = service || Resolver::DEFAULT_PLC_DIRECTORY
+      @plc_service = service || DIDKit::DEFAULT_PLC_DIRECTORY
     end
 
     def get_export(args = {})

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "didkit/constants"
 require_relative "didkit/did"
 require_relative "didkit/document"
 require_relative "didkit/global_did"

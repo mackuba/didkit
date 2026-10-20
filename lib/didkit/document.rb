@@ -42,6 +42,9 @@ module DIDKit
     # @raise [FormatError] when required fields are missing or invalid.
 
     def initialize(did, json)
+      raise ArgumentError, "did should be a DID object" unless did.is_a?(DID)
+      raise ArgumentError, "json should be a Hash" unless json.is_a?(Hash)
+
       raise FormatError, "Missing id field" if json['id'].nil?
       raise FormatError, "Invalid id field" unless json['id'].is_a?(String)
       raise FormatError, "id field doesn't match expected DID" unless json['id'] == did.to_s
@@ -67,7 +70,8 @@ module DIDKit
 
     # Returns the account's public signing key parsed from the DID document's `verificationMethod`.
     #
-    # @return [PublicKey, nil] decoded signing key wrapped in {PublicKey}, or nil if no matching verification method is found
+    # @return [PublicKey, nil] decoded signing key wrapped in {PublicKey}, or nil if no matching verification
+    #   method is found
     # @raise [FormatError] when `verificationMethod` or one of its entries has an invalid type
     # @raise [ArgumentError] when selected key data is not a string
     # @raise [KeyError] when the key is invalid, incorrectly encoded, or has unsupported type

@@ -3,6 +3,7 @@
 require 'json'
 require 'uri'
 
+require_relative 'constants'
 require_relative 'errors'
 require_relative 'requests'
 require_relative 'resolver'
@@ -19,8 +20,6 @@ module DIDKit
   #
 
   class DID
-    GENERIC_REGEXP = /\Adid\:\w+\:.+\z/
-
     include Requests
 
     # Resolve a handle into a DID. Looks up the given ATProto domain handle using the DNS TXT method
@@ -63,14 +62,18 @@ module DIDKit
         did = did.to_s
       end
 
-      if did =~ GENERIC_REGEXP
-        @did = did
-        @type = did.split(':')[1].to_sym
-      else
-        raise DIDError.new("Invalid DID format")
-      end
+      raise ArgumentError.new("did should be a String or a DID object") unless did.is_a?(String)
+      raise DIDError.new("Invalid DID format") unless did =~ DIDKit::GENERIC_DID_REGEXP
+      raise DIDError.new("DID string too long") if did.length > DIDKit::MAX_DID_LENGTH
 
-      if @type != :plc && @type != :web
+      @did = did
+      @type = did.split(':')[1].to_sym
+
+      if @type == :plc
+        validate_did_plc(did)
+      elsif @type == :web
+        validate_did_web(did)
+      else
         raise DIDError.new("Unrecognized DID type: #{@type}")
       end
 
@@ -118,12 +121,31 @@ module DIDKit
       end
     end
 
-    # Returns the domain portion of a did:web identifier.
+    # Returns the domain portion of a did:web identifier. If the DID uses `localhost` with port as the hostname,
+    # the port part is skipped.
     #
     # @return [String, nil] DID domain if the DID is a did:web, nil for did:plc
 
-    def web_domain
-      did.gsub(/^did\:web\:/, '') if type == :web
+    def did_web_domain
+      return nil unless type == :web
+
+      @did_web_host.gsub(/:.*/, '')
+    end
+
+    alias web_domain did_web_domain
+
+    # Returns the URL of the host that hosts a did:web identity, including the http/https scheme
+    # and the port if included.
+    #
+    # @return [String] root URL of the host referenced by the did:web domain
+    # @raise [DIDError] when the DID is not a did:web
+
+    def did_web_host
+      raise DIDError, "DID is not a did:web" unless type == :web
+
+      protocol = (@did_web_host =~ /^localhost(\:.*|$)/) ? 'http' : 'https'
+
+      "#{protocol}://#{@did_web_host}"
     end
 
     # Checks the status of the account/repo on its own PDS using the `getRepoStatus` endpoint.
@@ -199,6 +221,35 @@ module DIDKit
       else
         false
       end
+    end
+
+
+    private
+
+    def validate_did_plc(did)
+      raise DIDError.new("Invalid did:plc") unless did =~ DIDKit::DID_PLC_REGEXP
+    end
+
+    def validate_did_web(did)
+      identifier_part = did.delete_prefix('did:web:')
+
+      # literal colons delimit paths in did:web - a port separator must be percent-encoded
+      raise DIDError.new("Invalid did:web") if identifier_part.include?(':')
+
+      decoded_host = URI::DEFAULT_PARSER.unescape(identifier_part).b
+      raise DIDError.new("Invalid did:web") unless "did:web:#{decoded_host}" =~ DIDKit::DID_WEB_REGEXP
+
+      if decoded_host.include?(':')
+        hostname, port = decoded_host.split(':')
+        raise DIDError.new("Invalid did:web server port") unless port.to_i.between?(1, 65535)
+      else
+        hostname = decoded_host
+      end
+
+      tld = hostname.split('.').last.downcase
+      raise DIDError.new("Invalid did:web TLD: #{tld}") if RESERVED_DOMAINS.include?(tld) && hostname != 'localhost'
+
+      @did_web_host = decoded_host
     end
   end
 end

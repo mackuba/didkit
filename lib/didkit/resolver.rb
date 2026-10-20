@@ -5,6 +5,7 @@ require 'net/http'
 require 'resolv'
 require 'uri'
 
+require_relative 'constants'
 require_relative 'did'
 require_relative 'document'
 require_relative 'requests'
@@ -16,13 +17,6 @@ module DIDKit
   #
 
   class Resolver
-    # These TLDs are not allowed in ATProto handles, so the resolver returns nil for them
-    # without trying to look them up.
-    RESERVED_DOMAINS = %w(alt arpa example internal invalid local localhost onion test)
-
-    # URL of the standard PLC directory service.
-    DEFAULT_PLC_DIRECTORY = 'https://plc.directory'
-
     include Requests
 
     # @return [String, Array<String>, nil] custom DNS nameserver(s) to use for DNS TXT lookups
@@ -56,13 +50,16 @@ module DIDKit
     # @raise [FormatError] if verification is enabled and the DID document has invalid data
 
     def resolve_handle(handle, verify: true)
-      if handle.is_a?(DID) || handle =~ DID::GENERIC_REGEXP
+      if !(handle.is_a?(DID) || handle.is_a?(String))
+        raise ArgumentError, "handle argument should be a String or a DID object"
+      end
+
+      if handle.is_a?(DID) || handle =~ DIDKit::GENERIC_DID_REGEXP
         return DID.new(handle)
       end
 
-      domain = handle.gsub(/^@/, '')
-
-      return nil if RESERVED_DOMAINS.include?(domain.split('.').last)
+      domain = handle.gsub(/^@/, '').downcase
+      return nil unless valid_handle_identifier?(domain)
 
       if dns_did = resolve_handle_by_dns(domain)
         referenced_did = DID.new(dns_did, :dns)
@@ -162,6 +159,13 @@ module DIDKit
 
     private
 
+    def valid_handle_identifier?(handle)
+      return false unless handle =~ DIDKit::HANDLE_REGEXP && handle.length <= DIDKit::MAX_HANDLE_LENGTH
+      return false if DIDKit::RESERVED_DOMAINS.include?(handle.split('.').last)
+
+      true
+    end
+
     def resolv_options
       options = Resolv::DNS::Config.default_config_hash.dup
       options[:nameserver] = nameserver if nameserver
@@ -203,7 +207,7 @@ module DIDKit
 
     def parse_did_from_well_known(text)
       text = text.strip
-      text.lines.length == 1 && text =~ DID::GENERIC_REGEXP ? text : nil
+      text.lines.length == 1 && text =~ DIDKit::GENERIC_DID_REGEXP ? text : nil
     end
 
     def resolve_did_plc(did)
@@ -212,7 +216,7 @@ module DIDKit
     end
 
     def resolve_did_web(did)
-      json = get_json("https://#{did.web_domain}/.well-known/did.json")
+      json = get_json("#{did.did_web_host}/.well-known/did.json")
       Document.new(did, json)
     end
   end

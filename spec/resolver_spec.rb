@@ -85,6 +85,75 @@ describe DIDKit::Resolver do
 
     before { document_request }
 
+    it 'should reject arguments other than a String or a DID object without making a lookup' do
+      Resolv::DNS.expects(:open).never
+
+      [nil, false, true, 123, :handle, [], {}, Object.new].each do |value|
+        [true, false].each do |verify|
+          expect { subject.resolve_handle(value, verify: verify) }.to raise_error(
+            ArgumentError, 'handle argument should be a String or a DID object'
+          )
+        end
+      end
+
+      WebMock.should_not have_requested(:any, /.*/)
+    end
+
+    it 'should reject syntactically invalid handles without making a lookup' do
+      Resolv::DNS.expects(:open).never
+
+      [
+        '', 'com', '.example.com', 'example.com.', 'example..com', 'bücher.de',
+        '-example.com', 'example-.com', 'ex_ample.com', 'example.123', 'example.3com',
+        'user@example.com', 'example.com/path', 'example.com?query', 'example.com#fragment',
+        ' example.com', 'example.com ', "example.com\n", 'a' * 64 + '.com',
+        'localhost', 'localhost:3000', 'example.com:443',
+      ].each do |handle|
+        subject.resolve_handle(handle).should be_nil
+      end
+
+      WebMock.should_not have_requested(:any, /.*/)
+    end
+
+    it 'should resolve a 253-character handle with or without a leading @' do
+      handle = (['a' * 63] * 3 + ['b' * 61]).join('.')
+      handle.length.should == 253
+
+      Resolv::DNS.expects(:open).twice.returns([Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}")])
+
+      [handle, "@#{handle}"].each do |value|
+        result = subject.resolve_handle(value, verify: false)
+        result.to_s.should == sample_did
+        result.resolved_by.should == :dns
+      end
+    end
+
+    it 'should reject a 254-character handle even when its labels are valid' do
+      handle = (['a' * 63] * 3 + ['b' * 62]).join('.')
+      handle.length.should == 254
+      handle.should match(DIDKit::HANDLE_REGEXP)
+
+      Resolv::DNS.expects(:open).never
+
+      subject.resolve_handle(handle).should be_nil
+
+      WebMock.should_not have_requested(:any, /.*/)
+    end
+
+    it 'should lowercase the handle before querying DNS and verifying its reverse mapping' do
+      dns = Resolv::DNS.new
+
+      Resolv::DNS.expects(:new).with(anything).returns(dns)
+      dns.expects(:getresources).with('_atproto.dholms.xyz', Resolv::DNS::Resource::IN::TXT)
+        .returns([Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}")])
+
+      result = subject.resolve_handle('@Dholms.XYZ')
+
+      result.to_s.should == sample_did
+      result.resolved_by.should == :dns
+      document_request.should have_been_requested.once
+    end
+
     [:dns, :http].each do |method|
       context "when resolving a handle that is verified by #{method}" do
         let(:plc_directory) { 'https://plc-mirror.example' }
@@ -113,6 +182,14 @@ describe DIDKit::Resolver do
           it 'should look up the DID document in the configured PLC directory mirror' do
             WebMock.should_not have_requested(:get, "https://plc.directory/#{sample_did}")          
           end          
+
+          it 'should look up a lowercased handle string in the DID doc when verifying' do
+            result = subject.resolve_handle("@#{handle.upcase}")
+
+            result.to_s.should == sample_did
+            result.resolved_by.should == method
+            document_request.should have_been_requested.once
+          end
 
           context 'when the DID has a different handle assigned' do
             let(:document_json) {{ 'id' => sample_did, 'alsoKnownAs' => ['at://other.example'] }}
@@ -143,9 +220,12 @@ describe DIDKit::Resolver do
           end
 
           context 'when alsoKnownAs contains unrelated URIs before the primary handle' do
-            let(:document_json) {
-              { 'id' => sample_did, 'alsoKnownAs' => ['https://example.com', "at://#{handle}"] }
-            }
+            let(:document_json) {{
+              'id' => sample_did,
+              'alsoKnownAs' => [
+                'https://example.com', 'at://bad_handle', 'at://example.com?query', "at://#{handle}"
+              ]
+            }}
 
             it 'should accept the first valid AT Protocol handle' do
               subject.resolve_handle(handle).should == sample_did
@@ -300,6 +380,19 @@ describe DIDKit::Resolver do
       it 'should return nil' do
         subject.resolve_handle(handle).should be_nil
       end
+
+      it 'should reject uppercase and mixed-case reserved TLDs before making any lookups' do
+        Resolv::DNS.expects(:open).never
+
+        DIDKit::RESERVED_DOMAINS.each do |tld|
+          [tld.upcase, tld.capitalize].each do |suffix|
+            handle = "example.#{suffix}"
+
+            subject.resolve_handle(handle).should be_nil
+            WebMock.should_not have_requested(:any, /.*/)
+          end
+        end
+      end
     end
 
     context 'when a DID string is passed' do
@@ -382,6 +475,45 @@ describe DIDKit::Resolver do
         result.should be_a(DIDKit::Document)
         result.handles.should == ['witchcraft.systems']
         result.pds_endpoint.should == 'https://pds.witchcraft.systems'
+      end
+
+      it 'should resolve localhost without an explicit port over HTTP' do
+        did = 'did:web:localhost'
+
+        request = stub_request(:get, 'http://localhost/.well-known/did.json')
+          .to_return(body: JSON.generate('id' => did), headers: { 'Content-Type' => 'application/did+json' })
+
+        subject.resolve_did(did).did.to_s.should == did
+        request.should have_been_requested.once
+      end
+
+      it "should resolve DIDs using the percent-decoded host" do
+        {
+          'did:web:%65xample%2ecom' => 'https://example.com',
+          'did:web:loc%61lhost%3a%33%30%30%30' => 'http://localhost:3000'
+        }.each do |did, host|
+          request = stub_request(:get, "#{host}/.well-known/did.json")
+            .to_return(body: JSON.generate('id' => did), headers: { 'Content-Type' => 'application/did+json' })
+
+          subject.resolve_did(did).did.to_s.should == did
+          request.should have_been_requested.once
+        end
+      end
+
+      it 'should fetch did.json over HTTP using the decoded port' do
+        [1, 3000, 65535].each do |port|
+          did = "did:web:localhost%3A#{port}"
+          json = load_did_json('witchcraft.json').merge('id' => did)
+
+          request = stub_request(:get, "http://localhost:#{port}/.well-known/did.json")
+            .to_return(body: JSON.generate(json), headers: { 'Content-Type' => 'application/did+json' })
+
+          document = subject.resolve_did(did)
+
+          document.should be_a(DIDKit::Document)
+          document.did.to_s.should == did
+          request.should have_been_requested.once
+        end
       end
     end
   end

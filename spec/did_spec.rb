@@ -5,6 +5,191 @@ describe DIDKit::DID do
   let(:web_did) { 'did:web:taylorswift.com' }
 
   describe '#initialize' do
+    it 'should reject arguments other than a String or DID object' do
+      [nil, false, true, 123, :did, [], {}, Object.new].each do |value|
+        expect { subject.new(value) }.to raise_error(ArgumentError, 'did should be a String or a DID object')
+      end
+    end
+
+    context 'with a did:plc identifier' do
+      it 'should accept did:plc: followed by exactly 24 lowercase base32 characters' do
+        [
+          'did:plc:oky5czdrnfjpqslsw2a5iclo',
+          'did:plc:2nxcvdofca2l4l5hvguypda7',
+          'did:plc:abcdefghijklmnopqrstuvwx',
+          'did:plc:' + 'a' * 24,
+        ].each do |value|
+          did = subject.new(value)
+          did.to_s.should == value
+          did.type.should == :plc
+        end
+      end
+
+      it 'should reject invalid lengths, uppercase letters, and characters outside base32' do
+        [
+          'did:plc:' + 'a' * 23,
+          'did:plc:' + 'a' * 25,
+          plc_did.upcase,
+          'did:plc:' + 'A' * 24,
+          'did:plc:' + 'a' * 23 + '0',
+          'did:plc:' + 'a' * 23 + '1',
+          'did:plc:' + 'a' * 23 + '8',
+          'did:plc:' + 'a' * 23 + '9',
+          'did:plc:' + 'a' * 23 + '_'
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:plc|Invalid DID format/)
+        end
+      end
+    end
+
+    context 'with a did:web identifier' do
+      it 'should decode percent-escaped hostname characters and port separators' do
+        {
+          'did:web:%65xample%2ecom' => ['example.com', 'https://example.com'],
+          'did:web:localhost%3a3000' => ['localhost', 'http://localhost:3000'],
+          'did:web:loc%61lhost%3A%33%30%30%30' => ['localhost', 'http://localhost:3000']
+        }.each do |value, (domain, host)|
+          did = subject.new(value)
+
+          did.to_s.should == value
+          did.did_web_domain.should == domain
+          did.web_domain.should == domain
+          did.did_web_host.should == host
+        end
+      end
+
+      it 'should reject invalid escapes and decoded characters that are invalid in a hostname' do
+        %w[
+          did:web:example%GG.com did:web:example%2.com did:web:example%00.com
+          did:web:example%FF.com did:web:example.com%2Fpath did:web:example.com%2F
+          did:web:example.com%3Fquery did:web:example.com%23fragment did:web:user%40example.com
+          did:web:localhost%253A3000
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+
+      it 'should reject escapes in the first two segments of the DID string' do
+        %w[
+          did:w%65b:example.com di%64:web:example.com
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+
+      it 'should reject unencoded port separator' do
+        expect { subject.new("did:web:localhost:1234") }.to raise_error(DIDKit::DIDError, "Invalid did:web")
+      end
+
+      it 'should ports on non-localhost domains' do
+        expect { subject.new("did:web:example.com%3A443") }.to raise_error(DIDKit::DIDError, "Invalid did:web")
+      end
+
+      it 'should reject paths and other disallowed URL parts' do
+        %w[
+          did:web:example.com:user did:web:example.com/path did:web:example.com/
+          did:web:example.com?query did:web:example.com#fragment
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+
+      it 'should reject invalid localhost ports' do
+        %w[
+          did:web:localhost%3A did:web:localhost%3Aabc
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+
+      it 'should reject invalid hostnames' do
+        %w[
+          did:web:com did:web:.example.com did:web:example.com.
+          did:web:example..com did:web:-example.com did:web:example-.com
+          did:web:ex_ample.com did:web:example.123 did:web:127.0.0.1
+          did:web:bücher.de did:web:website
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+
+      it 'should reject hostnames with too long domain segments' do
+        expect { subject.new('did:web:' + 'a' * 64 + '.com') }.to raise_error(
+          DIDKit::DIDError, /Invalid did:web|Invalid DID format/
+        )
+      end
+
+      it 'should reject IPs and top-level domains starting with numbers' do
+        %w[
+          did:web:example.123 did:web:example.3com did:web:1.1.1.1 did:web:127.0.0.1
+        ].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+
+      it 'should accept valid hostnames' do
+        [
+          'did:web:sub.example.com', 'did:web:my-website.org', 'did:web:xn--bcher-kva.de',
+          'did:web:' + 'a' * 63 + '.com',
+        ].each do |value|
+          subject.new(value).to_s.should == value
+        end
+      end
+
+      it 'should accept localhost with or without an encoded port' do
+        %w[
+          did:web:localhost did:web:localhost%3A1234
+        ].each do |value|
+          subject.new(value).to_s.should == value
+        end
+      end
+
+      it 'should accept localhost ports up to 65535' do
+        [1, 1024, 65535].each do |port|
+          value = "did:web:localhost%3A#{port}"
+          subject.new(value).to_s.should == value
+        end
+      end
+
+      it 'should reject localhost ports outside the valid range' do
+        [0, 65536, 99999, 100000].each do |port|
+          expect { subject.new("did:web:localhost%3A#{port}") }.to raise_error(
+            DIDKit::DIDError, /Invalid did:web( server port)?/
+          )
+        end
+      end
+
+      it 'should reject forbidden top-level domains regardless of case' do
+        DIDKit::RESERVED_DOMAINS.each do |tld|
+          [tld, tld.upcase].each do |suffix|
+            expect { subject.new("did:web:example.#{suffix}") }.to raise_error(DIDKit::DIDError, /Invalid did:web TLD/)
+          end
+        end
+      end
+
+      it 'should allow reserved words in labels other than the top-level domain' do
+        subject.new('did:web:test.example.com').did_web_domain.should == 'test.example.com'
+      end
+
+      it 'should reject DID strings longer than 2048 characters' do
+        value = 'did:web:' + (['a' * 63] * 33).join('.')
+
+        expect { subject.new(value) }.to raise_error(DIDKit::DIDError, 'DID string too long')
+      end
+
+      it 'should run validations on the percent-decoded DID host' do
+        %w[did:web:example.%61rpa did:web:example%2ELOCAL did:web:localhost%3a65536].each do |value|
+          expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Invalid did:web|Invalid DID format/)
+        end
+      end
+    end
+
+    it 'should reject whitespace in DIDs' do
+      [" #{plc_did}", "#{plc_did}\n", " #{web_did}", "#{web_did}\n"].each do |value|
+        expect { subject.new(value) }.to raise_error(DIDKit::DIDError, "Invalid DID format")
+      end
+    end
+
     context 'with a valid did:plc' do
       it 'should return an initialized DID object' do
         did = subject.new(plc_did)
@@ -42,36 +227,81 @@ describe DIDKit::DID do
 
     context 'with a string that is not a DID' do
       it 'should raise an error' do
-        expect {
-          subject.new('not-a-did')
-        }.to raise_error(DIDKit::DIDError)
+        expect { subject.new('not-a-did') }.to raise_error(DIDKit::DIDError, "Invalid DID format")
       end
     end
 
     context 'when an unrecognized did: type' do
       it 'should raise an error' do
-        expect {
-          subject.new('did:example:123')
-        }.to raise_error(DIDKit::DIDError)
+        expect { subject.new('did:example:123') }.to raise_error(DIDKit::DIDError, /Unrecognized DID type/)
       end
     end
   end
 
-  describe '#web_domain' do
+  describe 'GENERIC_DID_REGEXP' do
+    it 'should recognize valid generic syntax independently of supported DID methods' do
+      %w[did:m:v did:method:val_two did:method:val:two did:method::::val did:method:val%BB].each do |value|
+        value.should match(DIDKit::GENERIC_DID_REGEXP)
+        expect { subject.new(value) }.to raise_error(DIDKit::DIDError, /Unrecognized DID type/)
+      end
+    end
+
+    it 'should reject invalid method names, empty identifiers, and trailing separators' do
+      %w[DID:method:val did:METHOD:val did:m123:val did:method: did:method:val: did:method:val%].each do |value|
+        value.should_not match(DIDKit::GENERIC_DID_REGEXP)
+      end
+    end
+  end
+
+  describe '#did_web_domain' do
     context 'for a did:web' do
       it 'should return the domain part' do
         did = subject.new('did:web:site.example.com')
 
-        did.web_domain.should == 'site.example.com'
-      end      
+        did.did_web_domain.should == 'site.example.com'
+      end
+
+      it 'should return localhost without the encoded port' do
+        subject.new('did:web:localhost%3A3000').did_web_domain.should == 'localhost'
+      end
     end
 
     context 'for a did:plc' do
       it 'should return nil' do
         did = subject.new('did:plc:yk4dd2qkboz2yv6tpubpc6co')
 
-        did.web_domain.should be_nil
+        did.did_web_domain.should be_nil
       end
+    end
+  end
+
+  describe '#web_domain' do
+    it 'should remain an alias for did_web_domain' do
+      [web_did, 'did:web:localhost', 'did:web:localhost%3A3000', plc_did].each do |value|
+        did = subject.new(value)
+        did.web_domain.should == did.did_web_domain
+      end
+    end
+  end
+
+  describe '#did_web_host' do
+    it 'should use HTTPS for non-localhost domains' do
+      subject.new('did:web:site.example.com').did_web_host.should == 'https://site.example.com'
+      subject.new('did:web:localhost.example.com').did_web_host.should == 'https://localhost.example.com'
+    end
+
+    it 'should use HTTP for localhost without an explicit port' do
+      subject.new('did:web:localhost').did_web_host.should == 'http://localhost'
+    end
+
+    it 'should use HTTP with decoded port for localhost hosts with port' do
+      [1, 3000, 65535].each do |port|
+        subject.new("did:web:localhost%3A#{port}").did_web_host.should == "http://localhost:#{port}"
+      end
+    end
+
+    it 'should raise a DIDError for a did:plc identifier' do
+      expect { subject.new(plc_did).did_web_host }.to raise_error(DIDKit::DIDError, "DID is not a did:web")
     end
   end
 

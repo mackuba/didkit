@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'constants'
 require_relative 'errors'
 
 module DIDKit
@@ -41,7 +42,13 @@ module DIDKit
       raise FormatError, "Invalid alsoKnownAs: #{aka.inspect}" unless aka.all? { |x| x.is_a?(String) }
 
       @also_known_as = aka
-      @handles = aka.select { |x| x =~ %r(\Aat://[^/]+\z) }.map { |x| x.gsub('at://', '') }
+      @handles = extract_handles_from_aka(aka)
+    end
+
+    def extract_handles_from_aka(aka)
+      handles = aka.select { |x| x.start_with?('at://') }.map { |x| x.delete_prefix('at://') }
+
+      handles.select { |h| h =~ DIDKit::HANDLE_REGEXP && h.length <= DIDKit::MAX_HANDLE_LENGTH }
     end
   end
 end

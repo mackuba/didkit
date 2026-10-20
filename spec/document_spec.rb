@@ -5,6 +5,18 @@ describe DIDKit::Document do
   let(:base_json) { load_did_json('dholms.json') }
 
   describe '#initialize' do
+    it 'should reject a DID argument that is not a DID object' do
+      [did.to_s, nil, false, 123, :did, [], {}, Object.new].each do |value|
+        expect { subject.new(value, base_json) }.to raise_error(ArgumentError, 'did should be a DID object')
+      end
+    end
+
+    it 'should reject a JSON argument that is not a Hash' do
+      [JSON.generate(base_json), nil, false, 123, :json, [], Object.new].each do |value|
+        expect { subject.new(did, value) }.to raise_error(ArgumentError, 'json should be a Hash')
+      end
+    end
+
     context 'with valid input' do
       let(:json) { base_json }
 
