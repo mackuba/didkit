@@ -80,23 +80,20 @@ module DIDKit
     # Tries to resolve a handle into DID using the DNS TXT method.
     #
     # Checks the DNS records for a given domain for an entry `_atproto.#{domain}` whose value is
-    # a correct DID string.
+    # a correct DID string. Records are rejected if there exists more than one valid entry and they
+    # are referencing two or more different DIDs.
     #
     # @param domain [String] a domain handle to look up
-    # @return [String, nil] resolved DID if found, nil otherwise
+    # @return [String, nil] resolved DID if one valid record is found, nil otherwise
 
     def resolve_handle_by_dns(domain)
       dns_records = Resolv::DNS.open(resolv_options) do |d|
         d.getresources("_atproto.#{domain}", Resolv::DNS::Resource::IN::TXT)
       end
 
-      if record = dns_records.first
-        if string = record.strings.first
-          return parse_did_from_dns(string)
-        end
-      end
+      dids = dns_records.map { |record| parse_did_from_dns(record.data) }.compact.uniq
 
-      nil
+      dids.length == 1 ? dids.first : nil
     end
 
     # Tries to resolve a handle into DID using the HTTP .well-known method.
@@ -201,8 +198,19 @@ module DIDKit
       false
     end
 
+    def valid_did?(did)
+      DID.new(did)
+      true
+    rescue DIDError
+      false
+    end
+
     def parse_did_from_dns(txt)
-      txt =~ /\Adid\=(did\:\w+\:.*)\z/ ? $1 : nil
+      return nil unless txt.start_with?('did=')
+
+      did = txt.delete_prefix('did=')
+
+      valid_did?(did) ? did : nil
     end
 
     def parse_did_from_well_known(text)

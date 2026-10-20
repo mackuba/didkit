@@ -23,8 +23,9 @@ Added:
 
 Other:
 
-- the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
 - more detailed validation of DID and handle strings
+- fixed DNS-based handle verification if there are multiple text chunks in a TXT record or multiple TXT records
+- the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
 
 ## [0.4.0] - 2026-07-02
 

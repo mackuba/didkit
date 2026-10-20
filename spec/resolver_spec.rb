@@ -395,6 +395,44 @@ describe DIDKit::Resolver do
       end
     end
 
+    context 'when multiple DNS TXT records reference conflicting DIDs' do
+      let(:records) {[
+        "did=did:web:example.com", "did=did:plc:oio4hkxaop4ao4wz2pp3f4cr"
+      ]}
+
+      before do
+        Resolv::DNS.stubs(:open).returns(records.map { |r| Resolv::DNS::Resource::IN::TXT.new(r) })
+      end
+
+      it 'should fall back to HTTPS and verify the DID it returns' do
+        request = stub_request(:get, "https://#{handle}/.well-known/atproto-did").to_return(body: sample_did)
+
+        result = subject.resolve_handle(handle)
+
+        result.to_s.should == sample_did
+        result.resolved_by.should == :http
+        request.should have_been_requested.once
+        document_request.should have_been_requested.once
+      end
+
+      it 'should return nil when HTTPS cannot resolve the ambiguity' do
+        request = stub_request(:get, "https://#{handle}/.well-known/atproto-did").to_return(status: 404)
+
+        subject.resolve_handle(handle).should be_nil
+        request.should have_been_requested.once
+        document_request.should_not have_been_requested
+      end
+    end
+
+    it 'should fall back to HTTPS when DNS only contains invalid DID values' do
+      Resolv::DNS.stubs(:open).returns([Resolv::DNS::Resource::IN::TXT.new('did=did:plc:short')])
+
+      request = stub_request(:get, "https://#{handle}/.well-known/atproto-did").to_return(body: sample_did)
+
+      subject.resolve_handle(handle).resolved_by.should == :http
+      request.should have_been_requested.once
+    end
+
     context 'when a DID string is passed' do
       let(:handle) { BSKY_APP_DID }
 
@@ -420,6 +458,59 @@ describe DIDKit::Resolver do
 
         document_request.should_not have_been_requested
       end
+    end
+  end
+
+  describe '#resolve_handle_by_dns' do
+    let(:records) { [] }
+
+    before { Resolv::DNS.stubs(:open).returns(records) }
+
+    it 'should concatenate all chunks of a TXT record before parsing the DID' do
+      records << Resolv::DNS::Resource::IN::TXT.new('d', 'id=did:plc:', sample_did.delete_prefix('did:plc:'))
+
+      subject.resolve_handle_by_dns('example.com').should == sample_did
+    end
+
+    it 'should ignore unrelated and malformed records before and after a valid DID' do
+      records.concat([
+        Resolv::DNS::Resource::IN::TXT.new('foobar'),
+        Resolv::DNS::Resource::IN::TXT.new('did=not-a-did'),
+        Resolv::DNS::Resource::IN::TXT.new('did=did:plc:short'),
+        Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}"),
+        Resolv::DNS::Resource::IN::TXT.new('did=did:web:example.com/path'),
+        Resolv::DNS::Resource::IN::TXT.new('other=value')
+      ])
+
+      subject.resolve_handle_by_dns('example.com').should == sample_did
+    end
+
+    it 'should accept multiple records when all valid records identify the same DID' do
+      records << Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}")
+      records << Resolv::DNS::Resource::IN::TXT.new('did=', sample_did)
+
+      subject.resolve_handle_by_dns('example.com').should == sample_did
+    end
+
+    it 'should reject different DIDs regardless of record order' do
+      records << Resolv::DNS::Resource::IN::TXT.new("did=#{sample_did}")
+      records << Resolv::DNS::Resource::IN::TXT.new('did=did:plc:oio4hkxaop4ao4wz2pp3f4cr')
+
+      subject.resolve_handle_by_dns('example.com').should be_nil
+      records.reverse!
+      subject.resolve_handle_by_dns('example.com').should be_nil
+    end
+
+    it 'should return nil when there are no TXT records' do
+      subject.resolve_handle_by_dns('example.com').should be_nil
+    end
+
+    it 'should return nil when no record contains a valid DID' do
+      ['unrelated=value', 'did=', 'did=did:plc:short', "did=#{sample_did}\n"].each do |value|
+        records << Resolv::DNS::Resource::IN::TXT.new(value)
+      end
+
+      subject.resolve_handle_by_dns('example.com').should be_nil
     end
   end
 
