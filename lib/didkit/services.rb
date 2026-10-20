@@ -21,29 +21,50 @@ module DIDKit
       @services&.detect { |s| s.key == key && s.type == type }
     end
 
-    # Returns the PDS service endpoint, if present.
+    # Returns the PDS service endpoint, if present and valid.
     #
     # If the DID has an `#atproto_pds` service declared in its `service` section,
     # returns the URL in its `serviceEndpoint` field. In other words, this is the URL
     # of the PDS assigned to a given user, which stores the user's account and repo.
     #
+    # Returns nil if the service record is present, but the URL is not a valid HTTP(S) URL.
+    #
     # @api public
     # @return [String, nil] PDS service endpoint URL
 
     def pds_endpoint
-      @pds_endpoint ||= get_service('atproto_pds', 'AtprotoPersonalDataServer')&.endpoint
+      return @pds_endpoint if @pds_endpoint
+
+      endpoint = get_service('atproto_pds', 'AtprotoPersonalDataServer')&.endpoint
+      return nil if endpoint.nil?
+
+      uri = URI(endpoint)
+      return nil if uri.scheme !~ /^https?$/ || uri.host.nil? || uri.host.empty?
+      return nil if !uri.path.empty? || uri.userinfo || uri.query || uri.fragment
+
+      @pds_endpoint = endpoint
     end
 
-    # Returns the labeler service endpoint, if present.
+    # Returns the labeler service endpoint, if present and valid.
     #
     # If the DID has an `#atproto_labeler` service declared in its `service` section,
     # returns the URL in its `serviceEndpoint` field.
+    #
+    # Returns nil if the service record is present, but the URL is not an HTTP(S) URL.
     #
     # @api public
     # @return [String, nil] labeler service endpoint URL
 
     def labeler_endpoint
-      @labeler_endpoint ||= get_service('atproto_labeler', 'AtprotoLabeler')&.endpoint
+      return @labeler_endpoint if @labeler_endpoint
+
+      endpoint = get_service('atproto_labeler', 'AtprotoLabeler')&.endpoint
+      return nil if endpoint.nil?
+
+      uri = URI(endpoint)
+      return nil if uri.scheme !~ /^https?$/ || uri.host.nil? || uri.host.empty?
+
+      @labeler_endpoint = endpoint
     end
 
     # Returns the hostname of the PDS service, if present.

@@ -23,7 +23,7 @@ Added:
 
 Other:
 
-- more detailed validation of DID and handle strings
+- more detailed validation of DID & handle strings and for service endpoint URLs
 - fixed DNS-based handle verification if there are multiple text chunks in a TXT record or multiple TXT records
 - the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
 
