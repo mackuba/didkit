@@ -82,7 +82,7 @@ module DIDKit
 
       if verify
         document = self.resolve_did(referenced_did)
-        return nil unless document.handles.first == domain
+        return nil unless document.handles.first&.downcase == domain
       end
 
       referenced_did

@@ -231,6 +231,18 @@ describe DIDKit::Resolver do
               subject.resolve_handle(handle).should == sample_did
             end
           end
+
+          context 'when alsoKnownAs contains the handle in mixed case' do
+            let(:document_json) {{ 'id' => sample_did, 'alsoKnownAs' => ['at://Dholms.XYZ'] }}
+
+            it 'should verify the handle regardless of the case' do
+              result = subject.resolve_handle(handle)
+
+              result.should == sample_did
+              result.resolved_by.should == method
+              document_request.should have_been_requested.once
+            end
+          end
         end
 
         context 'with explicit verify: true' do
