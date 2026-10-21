@@ -12,6 +12,17 @@ require_relative 'requests'
 
 module DIDKit
 
+  class << self
+    # Default shared resolver used when calling {DID}/{Document} methods directly.
+    # @return [DIDKit::Resolver]
+    def default_resolver
+      @default_resolver ||= Resolver.new
+    end
+
+    attr_writer :default_resolver
+  end
+
+
   #
   # A class which manages resolving of handles to DIDs and DIDs to DID documents.
   #
