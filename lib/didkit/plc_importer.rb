@@ -35,11 +35,13 @@ module DIDKit
       end
 
       @last_page_cids = []
+
       @plc_service = service || DIDKit::DEFAULT_PLC_DIRECTORY
+      @plc_service = "https://#{service}" unless @plc_service.include?('://')
     end
 
     def get_export(args = {})
-      url = URI("https://#{@plc_service}/export")
+      url = URI("#{@plc_service}/export")
       url.query = URI.encode_www_form(args)
 
       data = get_data(url, content_type: 'application/jsonlines')
@@ -47,7 +49,7 @@ module DIDKit
     end
 
     def fetch_audit_log(did)
-      json = get_json("https://#{@plc_service}/#{did}/log/audit", :content_type => :json)
+      json = get_json("#{@plc_service}/#{did}/log/audit", :content_type => :json)
       json.map { |j| PLCOperation.new(j) }
     end
 
