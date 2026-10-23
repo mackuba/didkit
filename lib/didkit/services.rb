@@ -28,6 +28,9 @@ module DIDKit
     # of the PDS assigned to a given user, which stores the user's account and repo.
     #
     # Returns nil if the service record is present, but the URL is not a valid HTTP(S) URL.
+    # For PDS endpoint specifically, the URL should only contain the scheme, hostname, and
+    # optional port number, but no userinfo, path, query or other components. As an exception,
+    # a path in the form of a single trailing slash is also allowed.
     #
     # @api public
     # @return [String, nil] PDS service endpoint URL
@@ -39,8 +42,10 @@ module DIDKit
       return nil if endpoint.nil?
 
       uri = URI(endpoint)
+
       return nil if uri.scheme !~ /^https?$/ || uri.host.nil? || uri.host.empty?
-      return nil if !uri.path.empty? || uri.userinfo || uri.query || uri.fragment
+      return nil if uri.userinfo || uri.query || uri.fragment
+      return nil unless uri.path.empty? || uri.path == '/'
 
       @pds_endpoint = endpoint
     end

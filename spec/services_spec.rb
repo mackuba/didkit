@@ -23,7 +23,10 @@ describe DIDKit::Services do
         end
       end
 
-      ['https://service.example', 'http://onet.pl', 'http://localhost:3000', 'https://app.example:999'].each do |url|
+      [
+        'https://service.example', 'http://onet.pl', 'http://localhost:3000', 'https://app.example:999',
+        'https://service.example/', 'https://atproto.brid.gy/', 'http://localhost:3000/'
+      ].each do |url|
         context "with endpoint #{url}" do
           let(:endpoint) { url }
 
@@ -37,10 +40,13 @@ describe DIDKit::Services do
       [
         'ftp://service.example', 'mailto:admin@example.com', '/relative',
         'https://', 'https:opaque', 'https:///path',
-        'https://service.example/', 'https://service.example/path',
+        'https://service.example/path', 'https://service.example//', 'https://service.example/%2F',
         'https://user:password@service.example',
+        'https://user:password@service.example/',
         'https://service.example?query=value', 'https://service.example#fragment',
-        'https://service.example?', 'https://service.example#'
+        'https://service.example?', 'https://service.example#',
+        'https://service.example/?query=value', 'https://service.example/#fragment',
+        'https://service.example/?', 'https://service.example/#'
       ].each do |url|
         context "with endpoint #{url}" do
           let(:endpoint) { url }
