@@ -102,4 +102,50 @@ describe 'the global DID alias' do
       end
     end
   end
+
+  it 'should make sure Set is available in PLCImporter' do
+    code = <<~RUBY
+      require 'didkit/plc_importer'
+
+      plc = DIDKit::PLCImporter.new
+
+      class << plc
+        def get_export(args = {})
+          [{
+            "did" => "did:plc:lkcklpo2xqoesg55c6hg5tbx",
+            "cid" => "bafyreic2qss33wv4drerxpixrzxmynzgwzkq6hikz6ozlnb6rbwjwabuvy",
+            "createdAt" => "2026-10-23T14:52:29.263Z",
+            "operation" => {
+              "sig" => "9OeMS7HJs4Y2niqlI4gewRAo_UqzIz062TdgSg4S-jc9fMrhg64UH5hNtG89keQHXAS68pXzFafW3s2VBEviQg",
+              "prev" => nil,
+              "type" => "plc_operation",
+              "services" => {
+                "atproto_pds" => {
+                  "type" => "AtprotoPersonalDataServer",
+                  "endpoint" => "https://fibercap.us-west.host.bsky.network"
+                }
+              },
+              "alsoKnownAs" => ["at://tomoha-k0623.bsky.social"],
+              "rotationKeys" => [
+                "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+                "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+              ],
+              "verificationMethods" => {
+                "atproto" => "did:key:zQ3shwgMyqQALf7pFTWYpUyLeRvtfmCPga1Vzde1qBmHfzkGt"
+              }
+            },
+            "nullified" => false
+          }]
+        end
+      end
+
+      puts plc.fetch_page.length
+    RUBY
+
+    stdout, stderr, status = Open3.capture3(RbConfig.ruby, '-I', lib_path, '-e', code)
+
+    stderr.should == ''
+    status.success?.should == true
+    stdout.should == "1\n"
+  end
 end
