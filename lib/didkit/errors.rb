@@ -42,6 +42,6 @@ module DIDKit
   #
   # Raised when an account's public key is invalid or unsupported.
   #
-  class KeyError < StandardError
+  class PublicKeyError < StandardError
   end
 end

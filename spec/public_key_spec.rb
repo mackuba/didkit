@@ -66,13 +66,13 @@ describe DIDKit::PublicKey do
         key = k256_multibase.dup
         key[0] = 'x'
 
-        expect { subject.new(key) }.to raise_error(DIDKit::KeyError, /Unsupported key encoding/)
+        expect { subject.new(key) }.to raise_error(DIDKit::PublicKeyError, /Unsupported key encoding/)
       end
     end
 
     context 'when the Base58 data is invalid' do
       it 'should raise a key error' do
-        expect { subject.new('z0') }.to raise_error(DIDKit::KeyError, 'Invalid Base58 encoding in key data')
+        expect { subject.new('z0') }.to raise_error(DIDKit::PublicKeyError, 'Invalid Base58 encoding in key data')
       end
     end
 
@@ -80,7 +80,7 @@ describe DIDKit::PublicKey do
       it 'should raise a key error' do
         encoded = encode_multibase("\x00\x00".b + "\x02".b + ("\x01".b * 32))
 
-        expect { subject.new(encoded) }.to raise_error(DIDKit::KeyError, /Unsupported key type/)
+        expect { subject.new(encoded) }.to raise_error(DIDKit::PublicKeyError, /Unsupported key type/)
       end
     end
 
@@ -88,7 +88,7 @@ describe DIDKit::PublicKey do
       it 'should raise a key error' do
         encoded = encode_multibase(DIDKit::PublicKey::K256_PREFIX + "\x02".b + ("\x01".b * 31))
 
-        expect { subject.new(encoded) }.to raise_error(DIDKit::KeyError, 'Invalid key length (34)')
+        expect { subject.new(encoded) }.to raise_error(DIDKit::PublicKeyError, 'Invalid key length (34)')
       end
     end
 
@@ -96,7 +96,7 @@ describe DIDKit::PublicKey do
       it 'should raise a key error' do
         encoded = encode_multibase(DIDKit::PublicKey::K256_PREFIX + "\x02".b + ("\xFF".b * 32))
 
-        expect { subject.new(encoded) }.to raise_error(DIDKit::KeyError, /Invalid key data/)
+        expect { subject.new(encoded) }.to raise_error(DIDKit::PublicKeyError, /Invalid key data/)
       end
     end
 
@@ -106,7 +106,7 @@ describe DIDKit::PublicKey do
         point.stubs(:on_curve?).returns(false)
         OpenSSL::PKey::EC::Point.stubs(:new).returns(point)
 
-        expect { subject.new(k256_multibase) }.to raise_error(DIDKit::KeyError, /Invalid key data/)
+        expect { subject.new(k256_multibase) }.to raise_error(DIDKit::PublicKeyError, /Invalid key data/)
       end
     end
   end

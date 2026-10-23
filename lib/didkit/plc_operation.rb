@@ -97,7 +97,7 @@ module DIDKit
     #
     # @return [PublicKey, nil] decoded signing key wrapped in {PublicKey}, or nil for `tombstone` operations
     # @raise [FormatError] when a required field is missing or has a wrong type
-    # @raise [KeyError] when the key is invalid, incorrectly encoded, or has unsupported type
+    # @raise [PublicKeyError] when the key is invalid, incorrectly encoded, or has unsupported type
 
     def signing_key
       case @type
@@ -109,14 +109,14 @@ module DIDKit
         key = methods['atproto']
         raise FormatError, "Missing verificationMethods.atproto key: #{@json}" if key.nil?
         raise FormatError, "Invalid verificationMethods.atproto key: #{key.inspect}" unless key.is_a?(String)
-        raise KeyError, "Key should start with did:key: #{key.inspect}" unless key.start_with?('did:key:')
+        raise PublicKeyError, "Key should start with did:key: #{key.inspect}" unless key.start_with?('did:key:')
 
         PublicKey.new(key[8..-1])
       when :create
         key = @json['operation']['signingKey']
         raise FormatError, "Missing signingKey field: #{@json}" if key.nil?
         raise FormatError, "Invalid signingKey field: #{key.inspect}" unless key.is_a?(String)
-        raise KeyError, "Key should start with did:key: #{key.inspect}" unless key.start_with?('did:key:')
+        raise PublicKeyError, "Key should start with did:key: #{key.inspect}" unless key.start_with?('did:key:')
 
         PublicKey.new(key[8..-1])
       else

@@ -43,17 +43,17 @@ module DIDKit
     #
     # @param string [String] key in the multikey string form, without the `did:key:` prefix
     # @raise [ArgumentError] when the argument is not a string
-    # @raise [KeyError] when the key is invalid, incorrectly encoded, or has unsupported type
+    # @raise [PublicKeyError] when the key is invalid, incorrectly encoded, or has unsupported type
 
     def initialize(string)
       raise ArgumentError, "Expected a string argument" unless string.is_a?(String)
-      raise KeyError, "Unsupported key encoding: #{string.inspect}" unless string.start_with?('z')
+      raise PublicKeyError, "Unsupported key encoding: #{string.inspect}" unless string.start_with?('z')
       @multibase = string
 
       begin
         key_decoded = Base58.base58_to_binary(string[1..-1], :bitcoin)
       rescue ArgumentError
-        raise KeyError, "Invalid Base58 encoding in key data"
+        raise PublicKeyError, "Invalid Base58 encoding in key data"
       end
 
       prefix = key_decoded.byteslice(0, 2)
@@ -64,10 +64,10 @@ module DIDKit
       when P256_PREFIX
         @key_type = :p256
       else
-        raise KeyError, "Unsupported key type: #{string.inspect}"
+        raise PublicKeyError, "Unsupported key type: #{string.inspect}"
       end
 
-      raise KeyError, "Invalid key length (#{key_decoded.bytesize})" unless key_decoded.bytesize == 35
+      raise PublicKeyError, "Invalid key length (#{key_decoded.bytesize})" unless key_decoded.bytesize == 35
 
       @compressed_key = key_decoded.byteslice(2, 33)
 
@@ -102,10 +102,10 @@ module DIDKit
     def validate_ec_point
       if !ec_point.on_curve?
         # shouldn't generally happen because OpenSSL rejects such keys in Point initializer
-        raise KeyError, "Invalid key data: #{@multibase.inspect}"
+        raise PublicKeyError, "Invalid key data: #{@multibase.inspect}"
       end
     rescue OpenSSL::OpenSSLError
-      raise KeyError, "Invalid key data: #{@multibase.inspect}"
+      raise PublicKeyError, "Invalid key data: #{@multibase.inspect}"
     end
   end
 end

@@ -432,7 +432,7 @@ describe DIDKit::Document do
       invalid = verification_method.merge('publicKeyMultibase' => 'z0')
       json = base_json.merge('verificationMethod' => [invalid, verification_method])
 
-      expect { subject.new(did, json).signing_key }.to raise_error(DIDKit::KeyError)
+      expect { subject.new(did, json).signing_key }.to raise_error(DIDKit::PublicKeyError)
     end
   end
 

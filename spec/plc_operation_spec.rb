@@ -616,13 +616,13 @@ describe DIDKit::PLCOperation do
       it "should raise a key error if the atproto key string doesn't start with did:key:" do
         json['operation']['verificationMethods']['atproto'] = 'zQ3shkke2XfFX6A1aRXkCqXKKF9m9N4GH9NCiRuDNFkpsqFmd'
 
-        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError, /should start with did:key/)
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::PublicKeyError, /should start with did:key/)
       end
 
       it 'should raise a key error if the contained multikey data is invalid' do
         json['operation']['verificationMethods']['atproto'] = 'did:key:z0'
 
-        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError)
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::PublicKeyError)
       end
     end
 
@@ -652,13 +652,13 @@ describe DIDKit::PLCOperation do
       it "should raise a key error if signingKey doesn't start with did:key:" do
         json['operation']['signingKey'] = 'zQ3shP5TBe1sQfSttXty15FAEHV1DZgcxRZNxvEWnPfLFwLxJ'
 
-        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError, /should start with did:key/)
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::PublicKeyError, /should start with did:key/)
       end
 
       it 'should raise a key error if the contained multikey data is invalid' do
         json['operation']['signingKey'] = 'did:key:z0'
 
-        expect { subject.new(json).signing_key }.to raise_error(DIDKit::KeyError)
+        expect { subject.new(json).signing_key }.to raise_error(DIDKit::PublicKeyError)
       end
     end
 
