@@ -230,12 +230,13 @@ module DIDKit
     end
 
     def resolve_did_plc(did)
-      json = get_json("#{@plc_service}/#{did}", content_type: /^application\/did(\+ld)?\+json(;.+)?$/)
+      options = @request_options.merge(content_type: /^application\/did(\+ld)?\+json(;.+)?$/)
+      json = get_json("#{@plc_service}/#{did}", options)
       Document.new(did, json)
     end
 
     def resolve_did_web(did)
-      json = get_json("#{did.did_web_host}/.well-known/did.json")
+      json = get_json("#{did.did_web_host}/.well-known/did.json", @request_options)
       Document.new(did, json)
     end
   end

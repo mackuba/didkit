@@ -29,6 +29,7 @@ Other:
 - make sure that handle verification is case-insensitive
 - the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
 - fixed redirects to relative URLs, and disallowed redirects to non-HTTP URLs and from HTTPS to HTTP
+- fixed `:max_redirects` & `:timeout` options not being used when loading a DID document
 
 ## [0.4.0] - 2026-07-02
 

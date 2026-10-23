@@ -679,4 +679,36 @@ describe DIDKit::Resolver do
       end
     end
   end
+
+  describe 'HTTP request options' do
+    subject {
+      described_class.new(timeout: 10, max_redirects: 3, nameserver: '1.1.1.1', plc_directory: 'plc-mirror.example')
+    }
+
+    [
+      [:resolve_did, 'did:plc:qhfo22pezo44fa3243z2h4ny', 'https://plc-mirror.example/did:plc:qhfo22pezo44fa3243z2h4ny'],
+      [:resolve_did, 'did:web:example.com', 'https://example.com/.well-known/did.json'],
+      [:resolve_handle_by_well_known, 'example.com', 'https://example.com/.well-known/atproto-did']
+    ].each do |method, argument, url|
+      it "should use configured timeout and max_redirects options in #{method}" do
+        response = Net::HTTPOK.new('1.1', '200', 'OK')
+        response['Content-Type'] = 'application/did+json'
+
+        body = (method == :resolve_did) ? JSON.generate('id' => argument) : sample_did
+        response.stubs(:body).returns(body)
+
+        subject.expects(:get_response).with(url, { timeout: 10, max_redirects: 3 }).twice.returns(response)
+
+        2.times do
+          result = subject.public_send(method, argument)
+
+          if method == :resolve_did
+            result.did.to_s.should == argument
+          else
+            result.should == sample_did
+          end
+        end
+      end
+    end
+  end
 end
