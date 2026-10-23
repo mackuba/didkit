@@ -69,7 +69,7 @@ module DIDKit
         return DID.new(handle)
       end
 
-      domain = handle.gsub(/^@/, '').downcase
+      domain = handle.gsub(/^@/, '').downcase(:ascii)
       return nil unless valid_handle_identifier?(domain)
 
       if dns_did = resolve_handle_by_dns(domain)
@@ -204,7 +204,7 @@ module DIDKit
     end
 
     def loopback_host?(host)
-      host.downcase == 'localhost' || IPAddr.new(host).loopback?
+      host.downcase(:ascii) == 'localhost' || IPAddr.new(host).loopback?
     rescue IPAddr::InvalidAddressError
       false
     end

@@ -115,6 +115,19 @@ describe DIDKit::Resolver do
       WebMock.should_not have_requested(:any, /.*/)
     end
 
+    it 'should reject handles with non-ascii letters before downcasing' do
+      Resolv::DNS.expects(:open).never
+
+      # K = Kelvin sign, downcased it's normal 'k'
+      ["\u212Auba.eu", "@\u212Auba.eu"].each do |handle|
+        [true, false].each do |verify|
+          subject.resolve_handle(handle, verify: verify).should be_nil
+        end
+      end
+
+      WebMock.should_not have_requested(:any, /.*/)
+    end
+
     it 'should resolve a 253-character handle with or without a leading @' do
       handle = (['a' * 63] * 3 + ['b' * 61]).join('.')
       handle.length.should == 253
