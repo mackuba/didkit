@@ -44,7 +44,7 @@ module DIDKit
     def initialize(options = {})
       @nameserver = options[:nameserver]
       @plc_service = options.key?(:plc_directory) ? parse_plc_service(options[:plc_directory]) : DEFAULT_PLC_DIRECTORY
-      @request_options = options.slice(:timeout, :max_redirects)
+      @request_options = options.slice(:timeout, :max_redirects).freeze
     end
 
     # Resolve a handle into a DID. Looks up the given ATProto domain handle using the DNS TXT method
@@ -124,7 +124,7 @@ module DIDKit
       end
 
       nil
-    rescue StandardError => e
+    rescue StandardError
       nil
     end
 

@@ -58,6 +58,7 @@ module DIDKit
     end
 
     def get_data(url, options = {})
+      options = options.dup
       content_type = options.delete(:content_type)
       response = get_response(url, options)
 

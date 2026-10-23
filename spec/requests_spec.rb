@@ -5,6 +5,23 @@ describe DIDKit::Requests do
 
   subject { RequestsTest.new }
 
+  describe '#get_data' do
+    it 'should not modify passed request options' do
+      options = { content_type: :json, timeout: 2, max_redirects: 0 }.freeze
+      url = 'https://plc.directory/data'
+
+      stub_request(:get, url).to_return(
+        { body: '{}', headers: { 'Content-Type' => 'application/json' } },
+        { body: '{}', headers: { 'Content-Type' => 'text/plain' } }
+      )
+
+      subject.send(:get_data, url, options).should == '{}'
+      expect { subject.send(:get_data, url, options) }.to raise_error(DIDKit::APIError)
+
+      options.should == { content_type: :json, timeout: 2, max_redirects: 0 }
+    end
+  end
+
   describe 'timeouts' do
     let(:success) { Net::HTTPOK.new('1.1', '200', 'OK') }
 
