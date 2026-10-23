@@ -72,13 +72,25 @@ describe DIDKit::PublicKey do
 
     context 'when the Base58 data is invalid' do
       it 'should raise a key error' do
-        expect { subject.new('z0') }.to raise_error(DIDKit::PublicKeyError, 'Invalid Base58 encoding in key data')
+        expect { subject.new('z' + '0' * 48) }.to raise_error(DIDKit::PublicKeyError, 'Invalid Base58 encoding in key data')
+      end
+    end
+
+    context 'when the encoded key has an invalid length' do
+      it 'should reject the key without calling the Base58 decoder' do
+        Base58.expects(:base58_to_binary).never
+
+        [1, 48, 50, 30_001].each do |length|
+          expect { subject.new('z' + '2' * (length - 1)) }.to raise_error(
+            DIDKit::PublicKeyError, "Invalid encoded key length (#{length})"
+          )
+        end
       end
     end
 
     context 'when the key uses an unsupported multicodec key' do
       it 'should raise a key error' do
-        encoded = encode_multibase("\x00\x00".b + "\x02".b + ("\x01".b * 32))
+        encoded = encode_multibase("\xE8\x01".b + "\x02".b + ("\x01".b * 32))
 
         expect { subject.new(encoded) }.to raise_error(DIDKit::PublicKeyError, /Unsupported key type/)
       end
@@ -88,7 +100,7 @@ describe DIDKit::PublicKey do
       it 'should raise a key error' do
         encoded = encode_multibase(DIDKit::PublicKey::K256_PREFIX + "\x02".b + ("\x01".b * 31))
 
-        expect { subject.new(encoded) }.to raise_error(DIDKit::PublicKeyError, 'Invalid key length (34)')
+        expect { subject.new(encoded) }.to raise_error(DIDKit::PublicKeyError, /Invalid encoded key length/)
       end
     end
 

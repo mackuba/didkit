@@ -47,7 +47,12 @@ module DIDKit
 
     def initialize(string)
       raise ArgumentError, "Expected a string argument" unless string.is_a?(String)
+
+      # both supported curve prefixes produce 48 Base58 characters, plus the multibase prefix;
+      # skip base58 decoding if the passed data is obviously wrong or too long
       raise PublicKeyError, "Unsupported key encoding: #{string.inspect}" unless string.start_with?('z')
+      raise PublicKeyError, "Invalid encoded key length (#{string.bytesize})" unless string.bytesize == 49
+
       @multibase = string
 
       begin
