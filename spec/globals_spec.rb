@@ -7,6 +7,32 @@ describe 'the global DID alias' do
   let(:lib_path) { File.expand_path('../lib', __dir__) }
   let(:did_string) { 'did:plc:yk4dd2qkboz2yv6tpubpc6co' }
 
+  let(:sample_op) {{
+    "did" => "did:plc:lkcklpo2xqoesg55c6hg5tbx",
+    "cid" => "bafyreic2qss33wv4drerxpixrzxmynzgwzkq6hikz6ozlnb6rbwjwabuvy",
+    "createdAt" => "2026-10-23T14:52:29.263Z",
+    "operation" => {
+      "sig" => "9OeMS7HJs4Y2niqlI4gewRAo_UqzIz062TdgSg4S-jc9fMrhg64UH5hNtG89keQHXAS68pXzFafW3s2VBEviQg",
+      "prev" => nil,
+      "type" => "plc_operation",
+      "services" => {
+        "atproto_pds" => {
+          "type" => "AtprotoPersonalDataServer",
+          "endpoint" => "https://fibercap.us-west.host.bsky.network"
+        }
+      },
+      "alsoKnownAs" => ["at://tomoha-k0623.bsky.social"],
+      "rotationKeys" => [
+        "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+        "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
+      ],
+      "verificationMethods" => {
+        "atproto" => "did:key:zQ3shwgMyqQALf7pFTWYpUyLeRvtfmCPga1Vzde1qBmHfzkGt"
+      }
+    },
+    "nullified" => false
+  }}
+
   context "when requiring 'didkit/did' directly" do
     it 'should expose only DIDKit::DID' do
       code = <<~RUBY
@@ -20,6 +46,27 @@ describe 'the global DID alias' do
       stderr.should == ''
       status.success?.should == true
       stdout.should == "#{did_string}\nfalse\n"
+    end
+
+    it 'should load audit log' do
+      code = <<~RUBY
+        require 'didkit/did'
+        did = DIDKit::DID.new(#{sample_op['did'].inspect})
+
+        module DIDKit::Requests
+          def get_json(url, options = {})
+            [#{sample_op}]
+          end
+        end
+
+        puts did.get_audit_log.length
+      RUBY
+
+      stdout, stderr, status = Open3.capture3(RbConfig.ruby, '-I', lib_path, '-e', code)
+
+      stderr.should == ''
+      status.success?.should == true
+      stdout.should == "1\n"
     end
   end
 
@@ -111,31 +158,7 @@ describe 'the global DID alias' do
 
       class << plc
         def get_export(args = {})
-          [{
-            "did" => "did:plc:lkcklpo2xqoesg55c6hg5tbx",
-            "cid" => "bafyreic2qss33wv4drerxpixrzxmynzgwzkq6hikz6ozlnb6rbwjwabuvy",
-            "createdAt" => "2026-10-23T14:52:29.263Z",
-            "operation" => {
-              "sig" => "9OeMS7HJs4Y2niqlI4gewRAo_UqzIz062TdgSg4S-jc9fMrhg64UH5hNtG89keQHXAS68pXzFafW3s2VBEviQg",
-              "prev" => nil,
-              "type" => "plc_operation",
-              "services" => {
-                "atproto_pds" => {
-                  "type" => "AtprotoPersonalDataServer",
-                  "endpoint" => "https://fibercap.us-west.host.bsky.network"
-                }
-              },
-              "alsoKnownAs" => ["at://tomoha-k0623.bsky.social"],
-              "rotationKeys" => [
-                "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
-                "did:key:zQ3shpKnbdPx3g3CmPf5cRVTPe1HtSwVn5ish3wSnDPQCbLJK"
-              ],
-              "verificationMethods" => {
-                "atproto" => "did:key:zQ3shwgMyqQALf7pFTWYpUyLeRvtfmCPga1Vzde1qBmHfzkGt"
-              }
-            },
-            "nullified" => false
-          }]
+          [#{sample_op}]
         end
       end
 

@@ -5,6 +5,7 @@ require 'uri'
 
 require_relative 'constants'
 require_relative 'errors'
+require_relative 'plc_importer'
 require_relative 'requests'
 require_relative 'resolver'
 
