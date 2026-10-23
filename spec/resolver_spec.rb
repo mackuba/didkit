@@ -337,6 +337,23 @@ describe DIDKit::Resolver do
         end
       end
 
+      it "should return nil when HTTP returns a DID that is not valid in ATProto" do
+        [
+          'did:plc:short', 'did:web:example.invalid', 'did:web:example.com:user', 'did:web:localhost%3A65536',
+          'did:web:example%GG.com', 'did:key:zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc',
+          'did:web:' + (['a' * 63] * 33).join('.'),
+        ].each do |value|
+          value.should match(DIDKit::GENERIC_DID_REGEXP)
+          stub_request(:get, "https://#{handle}/.well-known/atproto-did").to_return(body: value)
+
+          subject.resolve_handle_by_well_known(handle).should be_nil
+          subject.resolve_handle(handle).should be_nil
+          subject.resolve_handle(handle, verify: false).should be_nil
+        end
+
+        document_request.should_not have_been_requested
+      end
+
       context 'when HTTP throws an exception' do
         it 'should catch it and return nil' do
           stub_request(:get, "https://#{handle}/.well-known/atproto-did")

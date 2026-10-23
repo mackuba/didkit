@@ -226,7 +226,7 @@ module DIDKit
 
     def parse_did_from_well_known(text)
       text = text.strip
-      text.lines.length == 1 && text =~ DIDKit::GENERIC_DID_REGEXP ? text : nil
+      text.lines.length == 1 && valid_did?(text) ? text : nil
     end
 
     def resolve_did_plc(did)
