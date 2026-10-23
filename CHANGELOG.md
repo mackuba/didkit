@@ -20,6 +20,7 @@ Added:
 - added a shared global `DIDKit.default_resolver`, used internally by `DID` & `Document` – you can reassign it to one configured with a custom DNS nameserver or PLC mirror
 - added support for PLC servers returning `application/did+json` content type instead of `application/did+ld+json` (the spec allows it and the replica server implementation does that)
 - added support for PLC servers returning services with IDs in the absolute format `did:...#id` instead of just `#id`
+- added `DID#did_web_host`, which returns the did:web host URL together with `http(s)://` and a port if included (only for `localhost`), and raises a `DIDError` if the DID is not a did:web; `#web_domain` renamed to `#did_web_domain` and kept with the old behavior, `#web_domain` added as an alias
 
 Other:
 
@@ -27,6 +28,7 @@ Other:
 - fixed DNS-based handle verification if there are multiple text chunks in a TXT record or multiple TXT records
 - make sure that handle verification is case-insensitive
 - the global `DID` alias is not reassigned if something else already defines it before DIDKit is loaded
+- fixed redirects to relative URLs, and disallowed redirects to non-HTTP URLs and from HTTPS to HTTP
 
 ## [0.4.0] - 2026-07-02
 

@@ -6,6 +6,26 @@ describe DIDKit::Requests do
   subject { RequestsTest.new }
 
   describe 'redirects' do
+    it "should reject redirects non-HTTP URLs" do
+      ['https://plc.directory/start', 'http://localhost/start'].each do |source|
+        [
+          'ftp://files.example/target',
+          'file:///tmp/target',
+          'ws://files.example/target',
+          'mailto:admin@example.com',
+          'data:text/plain,target',
+          'javascript:alert(1)'
+        ].each do |location|
+          stub_request(:get, source).to_return(status: 302, headers: { 'Location' => location })
+
+          expect { subject.send(:get_data, source) }.to raise_error(DIDKit::APIError) { |error| error.status.should == 302 }
+
+          WebMock.should_not have_requested(:any, /.*/).with { |req| req.uri != Addressable::URI.parse(source) }
+          WebMock.reset!
+        end
+      end
+    end
+
     it 'should reject a redirect from HTTPS to HTTP without requesting the target' do
       stub_request(:get, 'https://plc.directory/start')
         .to_return(status: 302, headers: { 'Location' => 'http://localhost/target' })
@@ -33,13 +53,15 @@ describe DIDKit::Requests do
     end
 
     [
-      ['https://plc.directory/start', 'https://plc.directory/target'],
-      ['https://plc.directory/start', '/target'],
-      ['http://localhost/start', 'http://localhost/target'],
-      ['http://localhost/start', 'https://plc.directory/target']
-    ].each do |source, location|
+      ['https://plc.directory/start',      'https://plc.directory/target', 'https://plc.directory/target'],
+      ['https://plc.directory/start',      '/target',                      'https://plc.directory/target'],
+      ['https://plc.directory/path/start', '../target',                    'https://plc.directory/target'],
+      ['https://plc.directory/start',      '//mirror.example/target',      'https://mirror.example/target'],
+      ['http://localhost/start',           'http://localhost/target',      'http://localhost/target'],
+      ['http://localhost/start',           'http://other',                 'http://other'],
+      ['http://localhost/start',           'https://plc.directory/target', 'https://plc.directory/target']
+    ].each do |source, location, target|
       it "should follow a redirect from #{source} to #{location}" do
-        target = location.start_with?('/') ? 'https://plc.directory/target' : location
         stub_request(:get, source).to_return(status: 302, headers: { 'Location' => location })
 
         request = stub_request(:get, target).to_return(body: 'resolved')
