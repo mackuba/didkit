@@ -180,8 +180,8 @@ describe DIDKit::Resolver do
           end
 
           it 'should look up the DID document in the configured PLC directory mirror' do
-            WebMock.should_not have_requested(:get, "https://plc.directory/#{sample_did}")          
-          end          
+            WebMock.should_not have_requested(:get, "https://plc.directory/#{sample_did}")
+          end
 
           it 'should look up a lowercased handle string in the DID doc when verifying' do
             result = subject.resolve_handle("@#{handle.upcase}")
@@ -253,7 +253,7 @@ describe DIDKit::Resolver do
             result.resolved_by.should == method
 
             document_request.should have_been_requested.once
-          end          
+          end
         end
 
         context 'with verify: false' do
@@ -268,7 +268,7 @@ describe DIDKit::Resolver do
 
               document_request.should_not have_been_requested
             end
-          end          
+          end
         end
       end
     end

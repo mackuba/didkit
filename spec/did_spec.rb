@@ -584,10 +584,10 @@ describe DIDKit::DID do
 
         result.should == did
         result.resolved_by.should == :dns
-  
+
         WebMock.should_not have_requested(:get, "https://plc-mirror.example/#{did}")
         WebMock.should_not have_requested(:get, "https://plc.directory/#{did}")
-      end      
+      end
     end
 
     it 'should preserve a nil result when the resolver cannot resolve a handle' do

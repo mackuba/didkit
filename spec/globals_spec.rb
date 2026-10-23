@@ -20,7 +20,7 @@ describe 'the global DID alias' do
       stderr.should == ''
       status.success?.should == true
       stdout.should == "#{did_string}\nfalse\n"
-    end    
+    end
   end
 
   ['didkit', 'didkit/global_did'].each do |entry_point|
