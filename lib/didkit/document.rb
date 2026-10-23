@@ -74,7 +74,7 @@ module DIDKit
     #   method is found
     # @raise [FormatError] when `verificationMethod` or one of its entries has an invalid type
     # @raise [ArgumentError] when selected key data is not a string
-    # @raise [KeyError] when the key is invalid, incorrectly encoded, or has unsupported type
+    # @raise [PublicKeyError] when the key is invalid, incorrectly encoded, or has unsupported type
 
     def signing_key
       keys = @json['verificationMethod']

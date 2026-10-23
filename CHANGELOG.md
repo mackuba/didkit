@@ -11,7 +11,7 @@ Possibly breaking changes:
 - `DIDKit::PLCImporter::PLC_SERVICE` was moved to `DIDKit::DEFAULT_PLC_DIRECTORY`
 - `DIDKit::DID::GENERIC_REGEXP` was moved to `DIDKit::GENERIC_DID_REGEXP`
 - `DIDKit::Resolver#nameserver` has been changed to be read-only
-- `DIDKit::Resolver#resolve_handle` and `DID.resolve_handle` now verify the resolve handle bi-directionally, checking also if the matched DID has that handle assigned too; pass `verify: false` to skip this (default is true)
+- `DIDKit::Resolver#resolve_handle` and `DID.resolve_handle` now verify the resolve handle bi-directionally, checking also if the matched DID has that handle assigned too; pass `verify: false` to skip this (default is true). This call can now raise an error if the DID document cannot be fetched.
 
 Added:
 
