@@ -37,7 +37,7 @@ module DIDKit
       @last_page_cids = []
 
       @plc_service = service || DIDKit::DEFAULT_PLC_DIRECTORY
-      @plc_service = "https://#{service}" unless @plc_service.include?('://')
+      @plc_service = "https://#{@plc_service}" unless @plc_service.include?('://')
     end
 
     def get_export(args = {})
