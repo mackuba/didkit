@@ -1,6 +1,6 @@
 ## Unreleased
 
-Possibly breaking changes:
+Breaking changes:
 
 - the [ATProto DID spec](https://atproto.com/specs/did#did-documents) now says that if there are multiple handles in a document, only the first one should be checked bi-directionally and the rest should be skipped:
 
