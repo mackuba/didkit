@@ -23,7 +23,7 @@ To install the gem, run in the command line:
 
 Or add this to your app's `Gemfile`:
 
-    gem 'didkit', '~> 0.3'
+    gem 'didkit', '~> 0.5'
 
 
 ## Usage
